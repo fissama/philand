@@ -34,7 +34,11 @@ async fn main() {
         .route("/echo", post(echo));
 
     // Bind to localhost:3000
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT must be a number");
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Server running at http://{addr}");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
