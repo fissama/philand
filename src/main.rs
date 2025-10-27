@@ -1,4 +1,5 @@
 #[path = "utils/tables/tables.rs"] mod tables;
+#[path = "config/config.rs"] mod config;
 
 use axum::{
     routing::{get, post},
@@ -28,12 +29,13 @@ async fn echo(Json(payload): Json<Message>) -> (StatusCode, Json<Message>) {
 
 #[tokio::main]
 async fn main() {
-    // Define routes
+    config::Init();
+
+
     let app = Router::new()
         .route("/", get(hello_world))
         .route("/echo", post(echo));
 
-    // Bind to localhost:3000
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| "3000".to_string())
         .parse()
