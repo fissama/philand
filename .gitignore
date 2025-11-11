@@ -1,1 +1,35 @@
-/target
+# Rust build output
+/target/
+
+# Binary and library artifacts
+*.rlib
+*.so
+*.dylib
+*.dll
+*.exe
+*.a
+
+# IDE / editor settings
+/.idea/
+/.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment and secret files
+.env
+.env.*
+
+# Local database files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Coverage and test output
+coverage/

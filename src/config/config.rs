@@ -1,18 +1,25 @@
 use std::env;
+use dotenvy::dotenv;
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    networ_cfg: NetworkConfig,
+    network_cfg: NetworkConfig,
     database_cfg: DatabaseConfig,
+    jwt_cfg: JwtConfig,
+    cors_origins: Vec<String>,
 }
 
 impl Config {
     pub fn get_network_config(&self) -> NetworkConfig {
-        self.networ_cfg.clone()
+        self.network_cfg.clone()
     }
 
     pub fn get_database_config(&self) -> DatabaseConfig {
         self.database_cfg.clone()
+    }
+
+    pub fn get_jwt_config(&self) -> JwtConfig {
+        self.jwt_cfg.clone()
     }
 }
 
@@ -34,47 +41,33 @@ impl NetworkConfig {
 
 #[derive(Debug, Clone)]
 pub struct DatabaseConfig {
-    host: String,
-    port: String,
-    user: String,
-    password: String,
-    database: String,
     url: String,
 }
 
 impl DatabaseConfig {
-    pub fn get_host(&self) -> String {
-        self.host.clone()
-    }
-
-    pub fn get_port(&self) -> String {
-        self.port.clone()
-    }
-    
-    pub fn get_user(&self) -> String {
-        self.user.clone()
-    }
-
-    pub fn get_password(&self) -> String {
-        self.password.clone()
-    }
-
-    pub fn get_database(&self) -> String {
-        self.database.clone()
-    }
-
     pub fn get_url(&self) -> String {
-        if self.url.is_empty() {
-            self.url = format!("postgres://{}:{}@{}:{}/{}",
-                self.get_user(),
-                self.get_password(),
-                self.get_host(),
-                self.get_port(),
-                self.get_database(),
-            );
-        }
-
         self.url.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct JwtConfig {
+    secret: String,
+    ttl_min: i64,
+    bcrypt_cost: u32,
+}
+
+impl JwtConfig {
+    pub fn get_secret(&self) -> String {
+        self.secret.clone()
+    }
+
+    pub fn get_ttl_min(&self) -> i64 {
+        self.ttl_min
+    }
+
+    pub fn get_bcrypt_cost(&self) -> u32 {
+        self.bcrypt_cost
     }
 }
 
@@ -84,18 +77,19 @@ pub fn init() {
     unsafe {
         dotenv().ok();
         GLOBAL_CONFIG = Some(Config {
-            networ_cfg: NetworkConfig {
+            network_cfg: NetworkConfig {
                 host: env::var("NET_HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
                 port: env::var("NET_PORT").unwrap_or_else(|_| "3000".to_string()),
             },
             database_cfg: DatabaseConfig {
-                host: env::var("DB_HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
-                port: env::var("DB_PORT").unwrap_or_else(|_| "5432".to_string()),
-                user: env::var("DB_USER").unwrap_or_else(|_| "postgres".to_string()),
-                password: env::var("DB_PASSWORD").unwrap_or_else(|_| "postgres".to_string()),
-                database: env::var("DB_DATABASE").unwrap_or_else(|_| "philand".to_string()),
-                url: env::var("DB_URL").unwrap_or_else(|_| self::get_config().get_database_config().get_url()),
+                url: env::var("DB_URL").unwrap_or_else(|_| "mysql://philand:philand@127.0.0.1:3306/philand?ssl-mode=DISABLED".to_string()),
             },
+            jwt_cfg: JwtConfig {
+                secret: env::var("JWT_SECRET").unwrap_or_else(|_| "dev-super-secret-change-me".to_string()),
+                ttl_min: env::var("JWT_TTL_MIN").unwrap_or_else(|_| "10080".to_string()).parse().unwrap_or(10080),
+                bcrypt_cost: env::var("BCRYPT_COST").unwrap_or_else(|_| "12".to_string()).parse().unwrap_or(12),
+            },
+            cors_origins: env::var("CORS_ORIGINS").unwrap_or_else(|_| "http://localhost:3000".to_string()).split(',').map(|s| s.trim().to_string()).collect(),
         });
     }
 }

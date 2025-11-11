@@ -1,48 +1,53 @@
-#[path = "utils/tables/tables.rs"] mod tables;
-#[path = "config/config.rs"] mod config;
-
-use axum::{
-    routing::{get, post},
-    extract::Json,
-    http::StatusCode,
-    Router,
-};
-use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
+use std::sync::Arc;
+use axum::{routing::{get, post, patch}, Router};
+use dotenvy::dotenv;
+use tower_http::cors::CorsLayer;
+use tracing::{info, Level};
+use tracing_subscriber::FmtSubscriber;
+use crate::config::config::get_config;
+use crate::utils::database;
 
-#[derive(Serialize, Deserialize)]
-struct Message {
-    text: String,
-}
-
-// GET handler
-async fn hello_world() -> Json<Message> {
-    Json(Message {
-        text: "Hello from Rust API 🚀".to_string(),
-    })
-}
-
-// POST handler
-async fn echo(Json(payload): Json<Message>) -> (StatusCode, Json<Message>) {
-    (StatusCode::OK, Json(payload))
-}
+mod config;
+mod handler;
+mod manager;
+mod utils;
 
 #[tokio::main]
-async fn main() {
-    config::Init();
+async fn main() -> anyhow::Result<()> {
+    let subscriber = FmtSubscriber::builder().with_max_level(Level::INFO).with_env_filter(tracing_subscriber::EnvFilter::from_default_env()).finish();
+    let _ = tracing::subscriber::set_global_default(subscriber);
 
+    dotenv().ok();
+    config::config::init();
+    let db_url = get_config().get_database_config().get_url();
+    let pool = database::database::create_pool(&db_url).await?;
+    //sqlx::migrate!("./migrations").run(&pool).await?;
+    let state = Arc::new(handler::AppState { pool });
+
+    let protected = Router::new()
+        .route("/api/users", get(handler::users::list))
+        .route("/api/budgets", get(handler::budgets::list).post(handler::budgets::create))
+        .route("/api/budgets/{id}", get(handler::budgets::get))
+        .route("/api/budgets/{id}/categories", get(handler::categories::list).post(handler::categories::create))
+        .route("/api/budgets/{id}/entries", get(handler::entries::list).post(handler::entries::create))
+        .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))
+        .route("/api/budgets/{id}/members", get(handler::members::list).post(handler::members::upsert))
+        .route("/api/budgets/{id}/members/{user_id}", patch(handler::members::update).delete(handler::members::delete))
+        .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 
     let app = Router::new()
-        .route("/", get(hello_world))
-        .route("/echo", post(echo));
+        .route("/healthz", get(handler::health::health))
+        .route("/auth/signup", post(handler::auth::signup))
+        .route("/auth/login", post(handler::auth::login))
+        .merge(protected)
+        .with_state(state)
+        .layer(CorsLayer::permissive());
 
-    let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string())
-        .parse()
-        .expect("PORT must be a number");
+    let port: u16 = get_config().get_network_config().get_port().parse().unwrap_or(3000);
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    println!("Server running at http://{addr}");
-
+    info!("listening on http://{addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app).await.unwrap();;
+    Ok(())
 }
