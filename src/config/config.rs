@@ -21,6 +21,10 @@ impl Config {
     pub fn get_jwt_config(&self) -> JwtConfig {
         self.jwt_cfg.clone()
     }
+
+    pub fn get_cors_origins(&self) -> Vec<String> {
+        self.cors_origins.clone()
+    }
 }
 
 #[derive(Debug, Clone)]
