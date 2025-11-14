@@ -22,12 +22,13 @@ pub struct Entry {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateEntryReq {
-    pub category_id: String,
+    pub category_id: Option<String>,
     pub kind: String,
     pub amount_minor: i64,
     pub currency_code: Option<String>,
     pub entry_date: chrono::NaiveDate,
     pub description: Option<String>,
     pub counterparty: Option<String>,
+    #[serde(skip_deserializing)]
     pub created_by: String,
 }

@@ -8,6 +8,7 @@ use bcrypt::verify;
 
 use crate::manager::models::{user::{User, CreateUserReq}};
 use crate::manager::biz::users::UserService;
+use crate::manager::biz::password_reset::PasswordResetService;
 use crate::utils::error::error::AppError;
 use crate::config::config::get_config;
 use super::AppState;
@@ -37,7 +38,7 @@ pub async fn login(State(state): State<Arc<AppState>>, Json(req): Json<LoginReq>
     let (user_id, password_hash) = auth.ok_or(AppError::Unauthorized)?;
     let valid = verify(&req.password, &password_hash).map_err(|_| AppError::Internal)?;
     if !valid { return Err(AppError::Unauthorized); }
-    let user = sqlx::query_as::<_, User>("SELECT id, email, name, created_at FROM users WHERE id = ?").bind(&user_id).fetch_one(&state.pool).await?;
+    let user = sqlx::query_as::<_, User>("SELECT id, email, name, avatar, bio, timezone, locale, created_at, updated_at FROM users WHERE id = ?").bind(&user_id).fetch_one(&state.pool).await?;
     let ttl_min: i64 = get_config().get_jwt_config().get_ttl_min();
     let exp = (OffsetDateTime::now_utc() + Duration::minutes(ttl_min)).unix_timestamp() as usize;
     let claims = Claims { sub: user.id.clone(), email: user.email.clone(), exp };
@@ -52,4 +53,106 @@ pub async fn auth_middleware(mut req: Request<Body>, next: Next) -> Result<impl 
         .map_err(|_| AppError::Unauthorized)?;
     req.extensions_mut().insert(token_data.claims);
     Ok(next.run(req).await)
+}
+
+// Password Reset Endpoints
+
+#[derive(Deserialize)]
+pub struct ForgotEmailReq {
+    pub email: String,
+}
+
+#[derive(Serialize)]
+pub struct ForgotEmailResp {
+    pub token: String,
+    pub message: String,
+}
+
+pub async fn forgot_email(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<ForgotEmailReq>,
+) -> Result<Json<ForgotEmailResp>, AppError> {
+    let token_ttl = get_config().get_reset_config().token_ttl_min;
+    let token = PasswordResetService::create_email_reset(&state.pool, &req.email, token_ttl).await?;
+    
+    // In production, send email here
+    tracing::info!("Password reset token for {}: {}", req.email, token);
+    
+    Ok(Json(ForgotEmailResp {
+        token,
+        message: "Password reset token generated. Check your email.".to_string(),
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct ForgotOtpReq {
+    pub email: String,
+}
+
+#[derive(Serialize)]
+pub struct ForgotOtpResp {
+    pub otp: String,
+    pub message: String,
+}
+
+pub async fn forgot_otp(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<ForgotOtpReq>,
+) -> Result<Json<ForgotOtpResp>, AppError> {
+    let otp_ttl = get_config().get_reset_config().otp_ttl_min;
+    let otp = PasswordResetService::create_otp_reset(&state.pool, &req.email, otp_ttl).await?;
+    
+    // In production, send SMS/email here
+    tracing::info!("Password reset OTP for {}: {}", req.email, otp);
+    
+    Ok(Json(ForgotOtpResp {
+        otp,
+        message: "OTP code generated. Check your email/SMS.".to_string(),
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct ResetPasswordReq {
+    pub token: Option<String>,
+    pub email: Option<String>,
+    pub otp: Option<String>,
+    pub new_password: String,
+}
+
+#[derive(Serialize)]
+pub struct ResetPasswordResp {
+    pub message: String,
+}
+
+pub async fn reset_password(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<ResetPasswordReq>,
+) -> Result<Json<ResetPasswordResp>, AppError> {
+    let bcrypt_cost = get_config().get_jwt_config().get_bcrypt_cost();
+    
+    PasswordResetService::reset_password(
+        &state.pool,
+        req.token,
+        req.email,
+        req.otp,
+        req.new_password,
+        bcrypt_cost,
+    ).await?;
+    
+    Ok(Json(ResetPasswordResp {
+        message: "Password reset successful. You can now login with your new password.".to_string(),
+    }))
+}
+
+#[derive(Serialize)]
+pub struct LogoutResp {
+    pub message: String,
+}
+
+pub async fn logout() -> Result<Json<LogoutResp>, AppError> {
+    // JWT is stateless, so logout is handled client-side by removing the token
+    // This endpoint exists for API consistency
+    Ok(Json(LogoutResp {
+        message: "Logged out successfully. Please remove your token.".to_string(),
+    }))
 }

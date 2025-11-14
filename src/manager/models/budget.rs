@@ -10,10 +10,12 @@ pub struct Budget {
     pub description: Option<String>,
     pub archived: bool,
     pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CreateBudgetReq {
+    #[serde(skip_deserializing)]
     pub owner_id: String,
     pub name: String,
     pub currency_code: Option<String>,
