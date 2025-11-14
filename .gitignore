@@ -33,3 +33,39 @@
 
 # Coverage and test output
 coverage/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# SSL certificates (if using local SSL)
+ssl/
+*.pem
+*.key
+*.crt
+
+# Database backups
+*.sql
+backup/
+backups/
+
+# Node.js (for web directory)
+web/node_modules/
+web/.next/
+web/out/
+web/dist/
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# Package manager lock files (keep one, ignore others)
+web/yarn.lock
+web/pnpm-lock.yaml
+
+# Temporary files
+tmp/
+temp/

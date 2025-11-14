@@ -1,17 +1,41 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
-use axum::{routing::{get, post, patch}, Router, http::Method, http::HeaderValue};
+use axum::{
+    routing::{get, post, patch}, 
+    Router, 
+    http::Method, 
+    http::HeaderValue,
+    body::Body,
+    http::Request,
+    middleware::Next,
+    response::IntoResponse,
+    extract::{State, ConnectInfo},
+};
 use tower_http::cors::{CorsLayer, AllowOrigin, AllowHeaders};
 use dotenvy::dotenv;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 use crate::config::config::get_config;
 use crate::utils::database;
+use crate::utils::rate_limiter::RateLimiter;
+use crate::utils::error::error::AppError;
 
 mod config;
 mod handler;
 mod manager;
 mod utils;
+
+// Rate limiting middleware for auth routes
+async fn rate_limit_middleware(
+    State(state): State<Arc<handler::AppState>>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    req: Request<Body>,
+    next: Next,
+) -> Result<impl IntoResponse, AppError> {
+    state.rate_limiter.check_rate_limit(addr.ip())
+        .map_err(|msg| AppError::TooManyRequests(msg))?;
+    Ok(next.run(req).await)
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -23,7 +47,22 @@ async fn main() -> anyhow::Result<()> {
     let db_url = get_config().get_database_config().get_url();
     let pool = database::database::create_pool(&db_url).await?;
     //sqlx::migrate!("./migrations").run(&pool).await?;
-    let state = Arc::new(handler::AppState { pool });
+    
+    // Initialize rate limiter
+    let rate_limit_cfg = get_config().get_rate_limit_config();
+    let rate_limiter = Arc::new(RateLimiter::new(
+        rate_limit_cfg.short_window_sec,
+        rate_limit_cfg.short_max,
+        rate_limit_cfg.long_window_sec,
+        rate_limit_cfg.long_max,
+        rate_limit_cfg.fail_threshold,
+        rate_limit_cfg.fail_lock_min,
+    ));
+    
+    let state = Arc::new(handler::AppState { 
+        pool,
+        rate_limiter: rate_limiter.clone(),
+    });
 
     let cors_layer = {
         let origins_vec = get_config().get_cors_origins();
@@ -50,19 +89,35 @@ async fn main() -> anyhow::Result<()> {
 
     let protected = Router::new()
         .route("/api/users", get(handler::users::list))
+        .route("/api/profile", get(handler::profile::get_profile).patch(handler::profile::update_profile))
+        .route("/api/profile/avatar", post(handler::profile::upload_avatar).delete(handler::profile::delete_avatar))
         .route("/api/budgets", get(handler::budgets::list).post(handler::budgets::create))
-        .route("/api/budgets/{id}", get(handler::budgets::get))
+        .route("/api/budgets/{id}", get(handler::budgets::get).patch(handler::budgets::update).delete(handler::budgets::delete))
+        .route("/api/budgets/{id}/balance", get(handler::budgets::get_balance))
         .route("/api/budgets/{id}/categories", get(handler::categories::list).post(handler::categories::create))
         .route("/api/budgets/{id}/entries", get(handler::entries::list).post(handler::entries::create))
+        .route("/api/budgets/{id}/entries/{entry_id}", patch(handler::entries::update).delete(handler::entries::delete))
         .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))
         .route("/api/budgets/{id}/members", get(handler::members::list).post(handler::members::upsert))
         .route("/api/budgets/{id}/members/{user_id}", patch(handler::members::update).delete(handler::members::delete))
         .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 
-    let app = Router::new()
-        .route("/healthz", get(handler::health::health))
+    // Auth routes with rate limiting
+    let auth_routes = Router::new()
         .route("/auth/signup", post(handler::auth::signup))
         .route("/auth/login", post(handler::auth::login))
+        .route("/auth/forgot/email", post(handler::auth::forgot_email))
+        .route("/auth/forgot/otp", post(handler::auth::forgot_otp))
+        .route("/auth/reset", post(handler::auth::reset_password))
+        .route("/auth/logout", post(handler::auth::logout))
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            rate_limit_middleware
+        ));
+
+    let app = Router::new()
+        .route("/healthz", get(handler::health::health))
+        .merge(auth_routes)
         .merge(protected)
         .with_state(state)
         .layer(cors_layer);
@@ -71,6 +126,9 @@ async fn main() -> anyhow::Result<()> {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("listening on http://{addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();;
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>()
+    ).await.unwrap();
     Ok(())
 }

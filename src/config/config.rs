@@ -7,6 +7,8 @@ pub struct Config {
     database_cfg: DatabaseConfig,
     jwt_cfg: JwtConfig,
     cors_origins: Vec<String>,
+    rate_limit_cfg: RateLimitConfig,
+    reset_cfg: ResetConfig,
 }
 
 impl Config {
@@ -24,6 +26,14 @@ impl Config {
 
     pub fn get_cors_origins(&self) -> Vec<String> {
         self.cors_origins.clone()
+    }
+
+    pub fn get_rate_limit_config(&self) -> RateLimitConfig {
+        self.rate_limit_cfg.clone()
+    }
+
+    pub fn get_reset_config(&self) -> ResetConfig {
+        self.reset_cfg.clone()
     }
 }
 
@@ -75,6 +85,22 @@ impl JwtConfig {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct RateLimitConfig {
+    pub short_window_sec: u64,
+    pub short_max: u32,
+    pub long_window_sec: u64,
+    pub long_max: u32,
+    pub fail_threshold: u32,
+    pub fail_lock_min: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct ResetConfig {
+    pub token_ttl_min: i64,
+    pub otp_ttl_min: i64,
+}
+
 static mut GLOBAL_CONFIG: Option<Config> = None;
 
 pub fn init() {
@@ -94,6 +120,18 @@ pub fn init() {
                 bcrypt_cost: env::var("BCRYPT_COST").unwrap_or_else(|_| "12".to_string()).parse().unwrap_or(12),
             },
             cors_origins: env::var("CORS_ORIGINS").unwrap_or_else(|_| "http://localhost:3000".to_string()).split(',').map(|s| s.trim().to_string()).collect(),
+            rate_limit_cfg: RateLimitConfig {
+                short_window_sec: env::var("AUTH_RATE_LIMIT_SHORT_WINDOW_SEC").unwrap_or_else(|_| "10".to_string()).parse().unwrap_or(10),
+                short_max: env::var("AUTH_RATE_LIMIT_SHORT_MAX").unwrap_or_else(|_| "8".to_string()).parse().unwrap_or(8),
+                long_window_sec: env::var("AUTH_RATE_LIMIT_LONG_WINDOW_SEC").unwrap_or_else(|_| "600".to_string()).parse().unwrap_or(600),
+                long_max: env::var("AUTH_RATE_LIMIT_LONG_MAX").unwrap_or_else(|_| "80".to_string()).parse().unwrap_or(80),
+                fail_threshold: env::var("AUTH_FAIL_LOCK_THRESHOLD").unwrap_or_else(|_| "10".to_string()).parse().unwrap_or(10),
+                fail_lock_min: env::var("AUTH_FAIL_LOCK_MIN").unwrap_or_else(|_| "15".to_string()).parse().unwrap_or(15),
+            },
+            reset_cfg: ResetConfig {
+                token_ttl_min: env::var("RESET_TOKEN_TTL_MIN").unwrap_or_else(|_| "15".to_string()).parse().unwrap_or(15),
+                otp_ttl_min: env::var("RESET_OTP_TTL_MIN").unwrap_or_else(|_| "10".to_string()).parse().unwrap_or(10),
+            },
         });
     }
 }
