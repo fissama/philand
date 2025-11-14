@@ -84,11 +84,44 @@ export const api = {
   resetPassword: (input: { token: string; password: string }) =>
     request<{ message: string }>("/auth/reset", { method: "POST", body: input }),
   health: () => request<{ status: string }>("/healthz"),
+  profile: {
+    get: () => request<UserProfile>("/api/profile"),
+    update: (input: UpdateProfileReq) =>
+      request<UserProfile>("/api/profile", {
+        method: "PATCH",
+        body: input
+      }),
+    uploadAvatar: (input: UploadAvatarReq) =>
+      request<AvatarResponse>("/api/profile/avatar", {
+        method: "POST",
+        body: input
+      }),
+    deleteAvatar: () =>
+      request<AvatarResponse>("/api/profile/avatar", {
+        method: "DELETE"
+      })
+  },
   budgets: {
-    list: () => request<BudgetSummary[]>("/api/budgets"),
+    list: (query?: string) => {
+      const params = query ? `?query=${encodeURIComponent(query)}` : "";
+      return request<BudgetSummary[]>(`/api/budgets${params}`);
+    },
     create: (input: { name: string; currency: string }) =>
-      request<BudgetSummary>("/api/budgets", { method: "POST", body: input }),
-    detail: (id: string) => request<BudgetDetail>(`/api/budgets/${id}`)
+      request<BudgetSummary>("/api/budgets", { 
+        method: "POST", 
+        body: { name: input.name, currency_code: input.currency } 
+      }),
+    detail: (id: string) => request<BudgetDetail>(`/api/budgets/${id}`),
+    balance: (id: string) => request<BudgetBalance>(`/api/budgets/${id}/balance`),
+    update: (id: string, input: UpdateBudgetReq) =>
+      request<BudgetDetail>(`/api/budgets/${id}`, {
+        method: "PATCH",
+        body: input
+      }),
+    delete: (id: string) =>
+      request<{ message: string }>(`/api/budgets/${id}`, {
+        method: "DELETE"
+      })
   },
   categories: {
     list: (budgetId: string) => request<CategorySummary[]>(`/api/budgets/${budgetId}/categories`),
@@ -103,20 +136,30 @@ export const api = {
       budgetId: string,
       params: {
         page?: number;
+        perPage?: number;
         kind?: CategoryKind | "all";
         from?: string;
         to?: string;
         categoryId?: string;
+        search?: string;
+        sortBy?: "date" | "amount" | "description";
+        sortOrder?: "asc" | "desc";
       }
-    ) =>
-      request<EntryListResponse>(`/api/budgets/${budgetId}/entries?${new URLSearchParams(
-        Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
-          if (value !== undefined && value !== "") {
-            acc[key] = String(value);
-          }
-          return acc;
-        }, {})
-      ).toString()}`),
+    ) => {
+      // Convert camelCase to snake_case for backend
+      const queryParams: Record<string, string> = {};
+      if (params.kind && params.kind !== "all") queryParams.kind = params.kind;
+      if (params.from) queryParams.from = params.from;
+      if (params.to) queryParams.to = params.to;
+      if (params.categoryId) queryParams.category_id = params.categoryId;
+      if (params.search) queryParams.search = params.search;
+      if (params.sortBy) queryParams.sort_by = params.sortBy;
+      if (params.sortOrder) queryParams.sort_order = params.sortOrder;
+      if (params.page) queryParams.page = String(params.page);
+      if (params.perPage) queryParams.per_page = String(params.perPage);
+      
+      return request<Entry[]>(`/api/budgets/${budgetId}/entries?${new URLSearchParams(queryParams).toString()}`);
+    },
     create: (
       budgetId: string,
       input: {
@@ -129,11 +172,68 @@ export const api = {
     ) =>
       request<Entry>(`/api/budgets/${budgetId}/entries`, {
         method: "POST",
-        body: input
+        body: {
+          amount_minor: Math.round(input.amount * 100),
+          entry_date: input.occurredOn,
+          kind: input.kind,
+          description: input.note,
+          category_id: input.categoryId
+        }
+      }),
+    update: (
+      budgetId: string,
+      entryId: string,
+      input: {
+        amount?: number;
+        occurredOn?: string;
+        kind?: CategoryKind;
+        note?: string;
+        categoryId?: string;
+      }
+    ) =>
+      request<Entry>(`/api/budgets/${budgetId}/entries/${entryId}`, {
+        method: "PATCH",
+        body: {
+          ...(input.amount !== undefined && { amount_minor: Math.round(input.amount * 100) }),
+          ...(input.occurredOn && { entry_date: input.occurredOn }),
+          ...(input.kind && { kind: input.kind }),
+          ...(input.note !== undefined && { description: input.note }),
+          ...(input.categoryId !== undefined && { category_id: input.categoryId })
+        }
+      }),
+    delete: (budgetId: string, entryId: string) =>
+      request<{ message: string }>(`/api/budgets/${budgetId}/entries/${entryId}`, {
+        method: "DELETE"
       })
   },
   summary: {
-    monthly: (budgetId: string) => request<MonthlySummary[]>(`/api/budgets/${budgetId}/summary/monthly`)
+    monthly: async (budgetId: string, params?: { from?: string; to?: string }) => {
+      const queryString = params
+        ? `?${new URLSearchParams(
+            Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
+              if (value !== undefined && value !== "") {
+                acc[key] = String(value);
+              }
+              return acc;
+            }, {})
+          ).toString()}`
+        : "";
+      const data = await request<Array<{
+        month_start: string;
+        income_minor: number;
+        expense_minor: number;
+        net_minor: number;
+      }>>(`/api/budgets/${budgetId}/summary/monthly${queryString}`);
+      
+      // Transform backend response to include computed properties
+      return data.map((item) => ({
+        ...item,
+        month: item.month_start,
+        income: item.income_minor / 100,
+        expense: item.expense_minor / 100,
+        net: item.net_minor / 100
+      }));
+    }
   },
   members: {
     list: (budgetId: string) => request<Member[]>(`/api/budgets/${budgetId}/members`),
@@ -151,22 +251,64 @@ export interface UserProfile {
   email: string;
   name: string;
   role: Role;
+  avatar?: string;
+  bio?: string;
+  timezone: string;
+  locale: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export type Role = "Owner" | "Manager" | "Contributor" | "Viewer";
+export interface UpdateProfileReq {
+  name?: string;
+  bio?: string;
+  timezone?: string;
+  locale?: string;
+}
+
+export interface UploadAvatarReq {
+  avatar: string; // base64 encoded image
+}
+
+export interface AvatarResponse {
+  avatar_url: string;
+  message: string;
+}
+
+export type Role = "owner" | "manager" | "contributor" | "viewer";
 
 export interface BudgetSummary {
   id: string;
   name: string;
-  currency: string;
-  owner: string;
-  totalIncome: number;
-  totalExpense: number;
+  currency_code: string;
+  owner_id: string;
+  description?: string;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+  totalIncome?: number;
+  totalExpense?: number;
 }
 
 export interface BudgetDetail extends BudgetSummary {
-  categories: CategorySummary[];
+  // Categories are fetched separately via api.categories.list()
 }
+
+export interface BudgetBalance {
+  income: number;
+  expense: number;
+  net: number;
+  currency_code: string;
+}
+
+export interface UpdateBudgetReq {
+  name?: string;
+  description?: string;
+  currency_code?: string;
+  archived?: boolean;
+}
+
+export type Budget = BudgetDetail;
 
 export type CategoryKind = "income" | "expense";
 
@@ -178,11 +320,16 @@ export interface CategorySummary {
 
 export interface Entry {
   id: string;
-  amount: number;
-  occurredOn: string;
+  budget_id: string;
+  category_id: string;
   kind: CategoryKind;
-  note?: string;
-  category?: CategorySummary;
+  amount_minor: number;
+  currency_code: string;
+  entry_date: string;
+  description?: string;
+  counterparty?: string;
+  created_by: string;
+  created_at: string;
 }
 
 export interface EntryListResponse {
@@ -192,6 +339,11 @@ export interface EntryListResponse {
 }
 
 export interface MonthlySummary {
+  month_start: string;
+  income_minor: number;
+  expense_minor: number;
+  net_minor: number;
+  // Computed properties for convenience
   month: string;
   income: number;
   expense: number;
@@ -199,7 +351,7 @@ export interface MonthlySummary {
 }
 
 export interface Member {
-  id: string;
-  email: string;
+  budget_id: string;
+  user_id: string;
   role: Role;
 }

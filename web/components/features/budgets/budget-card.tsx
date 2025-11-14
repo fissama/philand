@@ -1,53 +1,75 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, BanknoteIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Link } from "@/lib/navigation";
+import { useTranslations } from "next-intl";
 
 import type { BudgetSummary } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BudgetCardProps {
   budget: BudgetSummary;
 }
 
 export function BudgetCard({ budget }: BudgetCardProps) {
+  const t = useTranslations();
+  const currency = budget.currency_code || "USD";
+
   return (
-    <Card className="flex flex-col justify-between border-none bg-gradient-to-br from-primary/10 via-background to-background shadow-lg">
-      <CardHeader>
-        <CardDescription className="uppercase tracking-wide text-xs text-muted-foreground">
-          {budget.currency}
-        </CardDescription>
-        <CardTitle>{budget.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-muted-foreground">Owner</p>
-            <p className="font-semibold">{budget.owner}</p>
+    <Link href={`/budgets/${budget.id}`} className="block group">
+      <Card className="h-full transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-2 hover:border-primary/50 bg-gradient-to-br from-card via-card to-muted/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                {budget.name}
+              </CardTitle>
+              <CardDescription className="mt-1 flex items-center gap-2">
+                <span className="font-semibold text-primary">{currency}</span>
+                {budget.archived ? (
+                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {t('budget.archived')}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    {t('budget.active')}
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            <div className="rounded-full bg-primary/10 p-2 group-hover:bg-primary/20 transition-colors">
+              <ArrowRight className="h-5 w-5 text-primary group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <BanknoteIcon className="h-5 w-5" />
-            <span>Total Income</span>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {budget.description ? (
+            <div>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {budget.description}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-muted-foreground italic">
+                {t('budget.description')}
+              </p>
+            </div>
+          )}
+          <div className="flex items-center justify-between pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">
+              {t('overview.created')} {new Date(budget.created_at).toLocaleDateString(undefined, { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+            <span className="text-xs font-medium text-primary group-hover:underline">
+              {t('budget.budgetDetails')} →
+            </span>
           </div>
-          <div className="text-emerald-500 font-semibold">
-            {budget.totalIncome.toLocaleString(undefined, { style: "currency", currency: budget.currency })}
-          </div>
-          <div className="text-rose-500 font-semibold">
-            -{budget.totalExpense.toLocaleString(undefined, { style: "currency", currency: budget.currency })}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="justify-between">
-        <Link href={`/budgets/${budget.id}`} className="text-sm font-semibold text-primary">
-          View details
-        </Link>
-        <Button asChild variant="ghost" size="icon">
-          <Link href={`/budgets/${budget.id}`}>
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

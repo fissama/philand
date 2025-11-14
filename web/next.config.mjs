@@ -1,8 +1,16 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
+  },
+  output: 'standalone',
   experimental: {
-    serverActions: true
-  }
+    outputFileTracingRoot: undefined,
+  },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

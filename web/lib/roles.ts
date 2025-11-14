@@ -1,10 +1,10 @@
 import type { Role } from "@/lib/api";
 
 export const ROLE_PRIORITY: Record<Role, number> = {
-  Owner: 3,
-  Manager: 2,
-  Contributor: 1,
-  Viewer: 0
+  owner: 3,
+  manager: 2,
+  contributor: 1,
+  viewer: 0
 };
 
 export function hasRole(userRole: Role | undefined | null, minimum: Role) {

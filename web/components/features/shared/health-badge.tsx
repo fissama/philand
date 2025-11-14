@@ -12,7 +12,7 @@ export function HealthBadge() {
   const healthy = data?.status === "ok";
 
   return (
-    <Badge variant={healthy ? "default" : "destructive"} className="gap-2">
+    <Badge variant={healthy ? "default" : "secondary"} className="gap-2">
       <ActivityIcon className="h-3.5 w-3.5" />
       {healthy ? "API: Healthy" : "API: Down"}
     </Badge>
