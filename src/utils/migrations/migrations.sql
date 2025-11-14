@@ -15,7 +15,12 @@ CREATE TABLE users (
     email           VARCHAR(255) NOT NULL UNIQUE,
     name            VARCHAR(255),
     password_hash   VARCHAR(255),
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+    avatar          TEXT,
+    bio             TEXT,
+    timezone        VARCHAR(50) DEFAULT 'UTC',
+    locale          VARCHAR(10) DEFAULT 'en',
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- ------------------------------------------
@@ -29,6 +34,7 @@ CREATE TABLE budgets (
     description     TEXT,
     archived        BOOLEAN NOT NULL DEFAULT FALSE,
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -78,4 +84,23 @@ CREATE TABLE entries (
     FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id),
     FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+-- ------------------------------------------
+-- Password Resets
+-- ------------------------------------------
+
+CREATE TABLE password_resets (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    reset_type ENUM('email', 'otp') NOT NULL,
+    token VARCHAR(255),
+    otp_code VARCHAR(6),
+    expires_at DATETIME NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token (token),
+    INDEX idx_otp (otp_code),
+    INDEX idx_expires (expires_at)
 );
