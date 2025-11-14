@@ -18,7 +18,9 @@
     "actions": "Hành động",
     "updated": "Đã cập nhật",
     "optional": "tùy chọn",
-    "clearSearch": "Xóa tìm kiếm"
+    "clearSearch": "Xóa tìm kiếm",
+    "all": "Tất cả",
+    "total": "Tổng cộng"
   },
   "nav": {
     "dashboard": "Trang chủ",
@@ -159,7 +161,19 @@
     "mediaSpend": "Chi tiêu truyền thông",
     "addNewCategory": "Thêm danh mục mới để tổ chức các giao dịch của bạn",
     "selectType": "Chọn loại danh mục",
-    "contactOwner": "Liên hệ chủ sở hữu ngân sách để yêu cầu quyền tạo danh mục"
+    "contactOwner": "Liên hệ chủ sở hữu ngân sách để yêu cầu quyền tạo danh mục",
+    "icon": "Biểu tượng",
+    "hidden": "Ẩn",
+    "hiddenDescription": "Danh mục ẩn sẽ không xuất hiện trong biểu mẫu nhập liệu",
+    "categoryCreated": "Tạo danh mục thành công",
+    "categoryUpdated": "Cập nhật danh mục thành công",
+    "categoryDeleted": "Xóa danh mục thành công",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa danh mục này?",
+    "deleteConfirmation": "Bạn có chắc chắn muốn xóa '{name}'? Hành động này không thể hoàn tác.",
+    "editCategoryDescription": "Cập nhật chi tiết danh mục, màu sắc và biểu tượng",
+    "manageCategories": "Quản lý Danh mục",
+    "viewOnlyMode": "Chế độ Chỉ xem",
+    "helpOrganized": "Tổ chức các giao dịch của bạn với danh mục đầy màu sắc"
   },
   "overview": {
     "title": "Tổng quan",

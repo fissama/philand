@@ -18,7 +18,9 @@
     "actions": "Actions",
     "updated": "Updated",
     "optional": "optional",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "all": "All",
+    "total": "Total"
   },
   "nav": {
     "dashboard": "Home",
@@ -159,7 +161,19 @@
     "mediaSpend": "Media spend",
     "addNewCategory": "Add a new category to organize your transactions",
     "selectType": "Select category type",
-    "contactOwner": "Contact the budget owner to request category creation access"
+    "contactOwner": "Contact the budget owner to request category creation access",
+    "icon": "Icon",
+    "hidden": "Hidden",
+    "hiddenDescription": "Hidden categories won't appear in entry forms",
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryDeleted": "Category deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this category?",
+    "deleteConfirmation": "Are you sure you want to delete '{name}'? This action cannot be undone.",
+    "editCategoryDescription": "Update category details, color, and icon",
+    "manageCategories": "Manage Categories",
+    "viewOnlyMode": "View Only Mode",
+    "helpOrganized": "Organize your transactions with colorful categories"
   },
   "overview": {
     "title": "Overview",

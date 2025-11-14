@@ -95,6 +95,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/budgets/{id}", get(handler::budgets::get).patch(handler::budgets::update).delete(handler::budgets::delete))
         .route("/api/budgets/{id}/balance", get(handler::budgets::get_balance))
         .route("/api/budgets/{id}/categories", get(handler::categories::list).post(handler::categories::create))
+        .route("/api/budgets/{id}/categories/{category_id}", get(handler::categories::get_by_id).patch(handler::categories::update).delete(handler::categories::delete))
         .route("/api/budgets/{id}/entries", get(handler::entries::list).post(handler::entries::create))
         .route("/api/budgets/{id}/entries/{entry_id}", patch(handler::entries::update).delete(handler::entries::delete))
         .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))

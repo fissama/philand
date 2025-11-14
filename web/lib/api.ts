@@ -125,10 +125,21 @@ export const api = {
   },
   categories: {
     list: (budgetId: string) => request<CategorySummary[]>(`/api/budgets/${budgetId}/categories`),
-    create: (budgetId: string, input: { name: string; kind: CategoryKind }) =>
+    create: (budgetId: string, input: { name: string; kind: CategoryKind; color?: string; icon?: string; is_hidden?: boolean }) =>
       request<CategorySummary>(`/api/budgets/${budgetId}/categories`, {
         method: "POST",
         body: input
+      }),
+    get: (budgetId: string, categoryId: string) =>
+      request<CategorySummary>(`/api/budgets/${budgetId}/categories/${categoryId}`),
+    update: (budgetId: string, categoryId: string, input: { name?: string; color?: string; icon?: string; is_hidden?: boolean }) =>
+      request<CategorySummary>(`/api/budgets/${budgetId}/categories/${categoryId}`, {
+        method: "PATCH",
+        body: input
+      }),
+    delete: (budgetId: string, categoryId: string) =>
+      request<{ message: string }>(`/api/budgets/${budgetId}/categories/${categoryId}`, {
+        method: "DELETE"
       })
   },
   entries: {
@@ -317,6 +328,11 @@ export interface CategorySummary {
   id: string;
   name: string;
   kind: CategoryKind;
+  is_hidden: boolean;
+  color?: string;
+  icon?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Entry {
