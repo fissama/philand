@@ -207,77 +207,82 @@ export function EntryTable({
               <Card 
                 key={entry.id} 
                 className={cn(
-                  "border-border cursor-pointer transition-colors",
-                  canEdit && "hover:bg-muted/50",
+                  "border-border transition-colors",
                   expandedEntry === entry.id && "ring-2 ring-primary/20"
                 )}
-                onClick={() => canEdit && setExpandedEntry(expandedEntry === entry.id ? null : entry.id)}
               >
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{entry.description || entry.counterparty || t('entry.description')}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(entry.entry_date).toLocaleDateString()} • {category?.name || t('entry.noCategory')}
-                      </p>
+                  {/* Main content - always visible */}
+                  <div className="space-y-3">
+                    {/* Top row: Description and Amount */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm leading-tight truncate">
+                          {entry.description || entry.counterparty || t('entry.description')}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={cn(
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium shrink-0",
+                            entry.kind === "income" 
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          )}>
+                            {entry.kind === "income" ? t('entry.income') : t('entry.expense')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={cn(
+                          "text-lg font-bold block",
+                          entry.kind === "income" ? "text-emerald-600" : "text-red-600"
+                        )}>
+                          {entry.kind === "income" ? "+" : "-"}
+                          {formattedAmount}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold",
-                        entry.kind === "income" 
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      )}>
-                        {entry.kind === "income" ? t('entry.income') : t('entry.expense')}
-                      </span>
+
+                    {/* Bottom row: Date, Category, and Actions */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground truncate">
+                          {new Date(entry.entry_date).toLocaleDateString()} • {category?.name || t('entry.noCategory')}
+                        </p>
+                      </div>
                       {canEdit && (
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1 shrink-0">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-9 w-9 p-0 hover:bg-muted"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem 
+                                onClick={() => setEditingEntry(entry)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t('common.edit')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteEntry(entry.id)}
+                                className="text-red-600 focus:text-red-600 cursor-pointer"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('common.delete')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className={cn(
-                      "text-base font-bold",
-                      entry.kind === "income" ? "text-emerald-600" : "text-red-600"
-                    )}>
-                      {entry.kind === "income" ? "+" : "-"}
-                      {formattedAmount}
-                    </span>
-                    {canEdit && expandedEntry === entry.id && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingEntry(entry);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          {t('common.edit')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteEntry(entry.id);
-                          }}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          {t('common.delete')}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  {canEdit && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {expandedEntry === entry.id ? t('entry.tapToCollapse') : t('entry.tapToExpand')}
-                    </p>
-                  )}
                 </CardContent>
               </Card>
             );

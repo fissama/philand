@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use axum::{extract::{Query, Path, State}, Json, Extension};
 use serde::{Deserialize, Serialize};
-use crate::manager::models::{budget::{Budget, CreateBudgetReq}};
+use crate::manager::models::{budget::{Budget, BudgetWithRole, CreateBudgetReq}};
 use crate::manager::biz::budgets::BudgetService;
 use crate::utils::error::error::AppError;
 use super::{AppState};
@@ -33,11 +33,14 @@ pub struct BudgetBalanceResp {
     pub currency_code: String,
 }
 
-pub async fn list(State(state): State<Arc<AppState>>, Query(filter): Query<BudgetFilter>) -> Result<Json<Vec<Budget>>, AppError> {
-    Ok(Json(BudgetService::list(&state.pool, filter.owner_id, filter.query).await?))
+pub async fn list(State(state): State<Arc<AppState>>, Extension(claims): Extension<crate::handler::auth::Claims>, Query(filter): Query<BudgetFilter>) -> Result<Json<Vec<BudgetWithRole>>, AppError> {
+    // Return budgets with user roles for RBAC
+    Ok(Json(BudgetService::list_with_roles_for_user(&state.pool, &claims.sub, filter.query).await?))
 }
 
-pub async fn get(State(state): State<Arc<AppState>>, Path(id): Path<String>) -> Result<Json<Budget>, AppError> {
+pub async fn get(State(state): State<Arc<AppState>>, Extension(claims): Extension<crate::handler::auth::Claims>, Path(id): Path<String>) -> Result<Json<Budget>, AppError> {
+    // Ensure user has access to this budget
+    crate::manager::biz::authz::ensure_role(&state.pool, &id, &claims.sub, crate::manager::models::role::Role::Viewer).await?;
     Ok(Json(BudgetService::get(&state.pool, &id).await?))
 }
 
@@ -61,7 +64,9 @@ pub async fn delete(State(state): State<Arc<AppState>>, Extension(claims): Exten
     }))
 }
 
-pub async fn get_balance(State(state): State<Arc<AppState>>, Path(id): Path<String>) -> Result<Json<BudgetBalanceResp>, AppError> {
+pub async fn get_balance(State(state): State<Arc<AppState>>, Extension(claims): Extension<crate::handler::auth::Claims>, Path(id): Path<String>) -> Result<Json<BudgetBalanceResp>, AppError> {
+    // Ensure user has access to this budget
+    crate::manager::biz::authz::ensure_role(&state.pool, &id, &claims.sub, crate::manager::models::role::Role::Viewer).await?;
     let budget = BudgetService::get(&state.pool, &id).await?;
     let balance = BudgetService::get_balance(&state.pool, &id).await?;
     Ok(Json(BudgetBalanceResp {

@@ -286,6 +286,7 @@ export interface BudgetSummary {
   archived: boolean;
   created_at: string;
   updated_at: string;
+  user_role: Role;
   totalIncome?: number;
   totalExpense?: number;
 }
@@ -353,5 +354,7 @@ export interface MonthlySummary {
 export interface Member {
   budget_id: string;
   user_id: string;
+  user_name?: string;
+  user_email: string;
   role: Role;
 }

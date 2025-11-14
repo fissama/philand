@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/api";
-import { useBudgetRole } from "@/lib/useBudgetRole";
+import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -29,7 +29,7 @@ export default function BudgetCategoriesPage() {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const { isManager } = useBudgetRole(params.id);
+  const { permissions } = useBudgetPermissions(params.id);
 
   const categoriesQuery = useQuery({
     queryKey: ["categories", params.id],
@@ -109,7 +109,7 @@ export default function BudgetCategoriesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isManager ? (
+            {permissions.canManageCategories ? (
               <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
                   <FormField
