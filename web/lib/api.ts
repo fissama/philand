@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { authStore } from "@/lib/auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
