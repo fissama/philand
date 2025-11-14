@@ -61,4 +61,12 @@ impl UserRepo {
         let row = sqlx::query("SELECT id, password_hash FROM users WHERE email = ?").bind(email).fetch_optional(pool).await?;
         Ok(row.map(|r| (r.get::<String, _>("id"), r.get::<String, _>("password_hash"))))
     }
+    
+    pub async fn get_id_by_email(pool: &DbPool, email: &str) -> Result<Option<String>, AppError> {
+        let row = sqlx::query("SELECT id FROM users WHERE email = ?")
+            .bind(email)
+            .fetch_optional(pool)
+            .await?;
+        Ok(row.map(|r| r.get::<String, _>("id")))
+    }
 }

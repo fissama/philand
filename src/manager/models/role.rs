@@ -7,5 +7,5 @@ impl Role {
     pub fn as_str(&self) -> &'static str {
         match self { Self::Owner=>"owner", Self::Manager=>"manager", Self::Contributor=>"contributor", Self::Viewer=>"viewer" }
     }
-    pub fn rank(&self) -> u8 { match self { Self::Owner=>0, Self::Manager=>1, Self::Contributor=>2, Self::Viewer=>3 } }
+    pub fn rank(&self) -> u8 { match self { Self::Owner=>3, Self::Manager=>2, Self::Contributor=>1, Self::Viewer=>0 } }
 }

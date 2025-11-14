@@ -6,12 +6,12 @@ import { useTranslations } from "next-intl";
 import { BudgetSettings } from "@/components/features/budgets/budget-settings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
-import { useBudgetRole } from "@/lib/useBudgetRole";
+import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
 
 export default function BudgetSettingsPage() {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
-  const { isOwner, isManager } = useBudgetRole(params.id);
+  const { permissions } = useBudgetPermissions(params.id);
 
   const budgetQuery = useQuery({
     queryKey: ["budget", params.id],
@@ -42,8 +42,8 @@ export default function BudgetSettingsPage() {
   }
 
   const budget = budgetQuery.data;
-  const canEdit = isOwner || isManager;
-  const canDelete = isOwner;
+  const canEdit = permissions.canManageSettings;
+  const canDelete = permissions.canDeleteBudget;
 
   return (
     <div className="space-y-6">

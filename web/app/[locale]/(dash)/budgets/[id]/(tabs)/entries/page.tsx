@@ -12,7 +12,10 @@ import { z } from "zod";
 import { PlusCircle } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
+import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
+
 import { EntryTable } from "@/components/features/entries/entry-table";
+import { EntryForm } from "@/components/features/entries/entry-form";
 import { DateRangePicker } from "@/components/features/forms/date-range-picker";
 import { MoneyInput } from "@/components/features/forms/money-input";
 import { Button } from "@/components/ui/button";
@@ -40,6 +43,7 @@ export default function BudgetEntriesPage() {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { permissions } = useBudgetPermissions(params.id);
   
   // Calculate this month's date range
   const getThisMonthRange = () => {
@@ -107,10 +111,13 @@ export default function BudgetEntriesPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
+    mutationFn: (values: any) =>
       api.entries.create(params.id, {
-        ...values,
-        amount: Math.abs(values.amount)
+        amount: Math.abs(values.amount),
+        occurredOn: values.occurredOn,
+        kind: values.kind,
+        note: values.note,
+        categoryId: values.categoryId,
       }),
     onSuccess: () => {
       toast.success(t('entry.addEntry'));
@@ -127,6 +134,10 @@ export default function BudgetEntriesPage() {
 
   const handleSubmit = (values: FormValues) => {
     mutation.mutate(values);
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    await mutation.mutateAsync(data);
   };
 
   const handleSearch = () => {
@@ -232,117 +243,32 @@ export default function BudgetEntriesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold">{t('entry.entries')}</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-xl sm:text-lg font-semibold">{t('entry.entries')}</h2>
+          <p className="text-base sm:text-sm text-muted-foreground">
             {entriesQuery.data?.length ?? 0} {entriesQuery.data?.length === 1 ? t('overview.entry') : t('entry.entries').toLowerCase()}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
-              <PlusCircle className="h-4 w-4" />
+            <Button className="gap-2 h-12 sm:h-10 text-base sm:text-sm font-medium w-full sm:w-auto">
+              <PlusCircle className="h-5 w-5 sm:h-4 sm:w-4" />
               {t('entry.addEntry')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader className="sr-only">
               <DialogTitle>{t('entry.addEntry')}</DialogTitle>
               <DialogDescription>{t('entry.recordTransaction')}</DialogDescription>
             </DialogHeader>
-            <Form {...form}>
-              <form className="grid gap-4" onSubmit={form.handleSubmit(handleSubmit)}>
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('entry.amount')}</FormLabel>
-                    <FormControl>
-                      <MoneyInput
-                        {...field}
-                        onChange={(event) => {
-                          const next = parseFloat(event.target.value);
-                          field.onChange(Number.isNaN(next) ? 0 : next);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="occurredOn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('entry.date')}</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kind"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('entry.type')}</FormLabel>
-                    <FormControl>
-                      <select
-                        className="h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      >
-                        <option value="income">{t('entry.income')}</option>
-                        <option value="expense">{t('entry.expense')}</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('entry.category')}</FormLabel>
-                    <FormControl>
-                      <select
-                        className="h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      >
-                        <option value="">{t('entry.selectCategory')}</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name} ({category.kind})
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="note"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('entry.note')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('entry.optionalNote')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-                <Button type="submit" disabled={mutation.isPending} className="w-full">
-                  {mutation.isPending ? t('entry.saving') : t('entry.addEntry')}
-                </Button>
-              </form>
-            </Form>
+            <EntryForm
+              budgetId={params.id}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setDialogOpen(false)}
+              isLoading={mutation.isPending}
+              title={t('entry.addEntry')}
+              description={t('entry.recordTransaction')}
+              categories={categories}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -357,7 +283,7 @@ export default function BudgetEntriesPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search Bar */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 placeholder="Search by description..."
                 value={searchInput}
@@ -365,31 +291,38 @@ export default function BudgetEntriesPage() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSearch();
                 }}
-                className="flex-1"
+                className="flex-1 h-12 sm:h-10 text-base sm:text-sm"
               />
-              <Button onClick={handleSearch} variant="secondary">
-                Search
-              </Button>
-              {filters.search && (
-                <Button
-                  onClick={() => {
-                    setSearchInput("");
-                    setFilters((prev) => ({ ...prev, search: undefined, page: 1 }));
-                  }}
-                  variant="ghost"
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleSearch} 
+                  variant="secondary"
+                  className="flex-1 sm:flex-none h-12 sm:h-10 text-base sm:text-sm"
                 >
-                  Clear
+                  Search
                 </Button>
-              )}
+                {filters.search && (
+                  <Button
+                    onClick={() => {
+                      setSearchInput("");
+                      setFilters((prev) => ({ ...prev, search: undefined, page: 1 }));
+                    }}
+                    variant="ghost"
+                    className="h-12 sm:h-10 text-base sm:text-sm"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Filters Row */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label htmlFor="filter-type" className="text-sm font-medium text-muted-foreground">{t('entry.type')}:</label>
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label htmlFor="filter-type" className="text-base sm:text-sm font-medium text-muted-foreground">{t('entry.type')}:</label>
                 <select
                   id="filter-type"
-                  className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-12 sm:h-9 rounded-md border border-input bg-transparent px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={filters.kind || "all"}
                   onChange={(e) => setFilters((prev) => ({ ...prev, kind: e.target.value as "income" | "expense" | "all", page: 1 }))}
                 >
@@ -399,11 +332,11 @@ export default function BudgetEntriesPage() {
                 </select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label htmlFor="filter-category" className="text-sm font-medium text-muted-foreground">{t('entry.category')}:</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label htmlFor="filter-category" className="text-base sm:text-sm font-medium text-muted-foreground">{t('entry.category')}:</label>
                 <select
                   id="filter-category"
-                  className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-12 sm:h-9 rounded-md border border-input bg-transparent px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={filters.categoryId || "all"}
                   onChange={(e) => setFilters((prev) => ({ ...prev, categoryId: e.target.value === "all" ? undefined : e.target.value, page: 1 }))}
                 >
@@ -416,11 +349,11 @@ export default function BudgetEntriesPage() {
                 </select>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label htmlFor="filter-period" className="text-sm font-medium text-muted-foreground">{t('entry.period')}:</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label htmlFor="filter-period" className="text-base sm:text-sm font-medium text-muted-foreground">{t('entry.period')}:</label>
                 <select
                   id="filter-period"
-                  className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-12 sm:h-9 rounded-md border border-input bg-transparent px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={datePreset}
                   onChange={(e) => handleDatePreset(e.target.value as DateRangePreset)}
                 >
@@ -488,7 +421,7 @@ export default function BudgetEntriesPage() {
               queryClient.invalidateQueries({ queryKey: ["entries", params.id] });
               queryClient.invalidateQueries({ queryKey: ["budget-balance", params.id] });
             }}
-            canEdit={true}
+            canEdit={permissions.canEditEntries}
           />
           
           {/* Pagination Controls */}

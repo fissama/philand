@@ -106,12 +106,17 @@ export function MemberList({ members, currentRole, onRemove }: MemberListProps) 
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">User {member.user_id.slice(0, 8)}...</p>
+                      <p className="font-medium">
+                        {member.user_name || member.user_email.split('@')[0]}
+                      </p>
                       <Badge variant="outline" className={colorClass}>
                         {member.role}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {member.user_email}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{description}</p>
                   </div>
                 </div>
 

@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/api";
-import { useBudgetRole } from "@/lib/useBudgetRole";
+import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
 import { toast } from "sonner";
 
 const schema = z.object({
@@ -43,7 +43,7 @@ export default function BudgetMembersPage() {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const { role: currentRole, isOwner } = useBudgetRole(params.id);
+  const { role: currentRole, permissions } = useBudgetPermissions(params.id);
 
   const membersQuery = useQuery({ 
     queryKey: ["members", params.id], 
@@ -162,7 +162,7 @@ export default function BudgetMembersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isOwner ? (
+            {permissions.canManageMembers ? (
               <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit((values) => createMutation.mutate(values))}>
                   <FormField
