@@ -7,6 +7,8 @@ import { Link } from "@/lib/navigation";
 import { useTranslations } from 'next-intl';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, Plus } from "lucide-react";
 
+import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -21,15 +23,19 @@ export default function BudgetLayout({ children }: PropsWithChildren) {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
   const pathname = usePathname();
+  const { permissions, tabPermissions, isContributor } = useBudgetPermissions(params.id);
 
-  const tabs = [
-    { label: t('overview.title'), path: "overview" },
-    { label: t('category.categories'), path: "categories" },
-    { label: t('entry.entries'), path: "entries" },
-    { label: t('members.title'), path: "members" },
-    { label: t('summary.title'), path: "summary" },
-    { label: t('settings.title'), path: "settings" }
+  // Filter tabs based on user permissions
+  const allTabs = [
+    { label: t('overview.title'), path: "overview", allowed: tabPermissions.overview },
+    { label: t('category.categories'), path: "categories", allowed: tabPermissions.categories },
+    { label: t('entry.entries'), path: "entries", allowed: tabPermissions.entries },
+    { label: t('members.title'), path: "members", allowed: tabPermissions.members },
+    { label: t('summary.title'), path: "summary", allowed: tabPermissions.summary },
+    { label: t('settings.title'), path: "settings", allowed: tabPermissions.settings }
   ];
+
+  const tabs = allTabs.filter(tab => tab.allowed);
 
   const budgetQuery = useQuery({
     queryKey: ["budget", params.id],
@@ -77,37 +83,22 @@ export default function BudgetLayout({ children }: PropsWithChildren) {
         <div className="flex flex-col gap-6">
           {/* Budget Title, Quick Add Button, and Net Balance */}
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between sm:w-full lg:w-auto gap-4">
-              <div className="space-y-2">
-                <p className="text-xs uppercase text-muted-foreground font-medium tracking-wider">
-                  {t('budget.title')}
+            <div className="space-y-2">
+              <p className="text-xs uppercase text-muted-foreground font-medium tracking-wider">
+                {t('budget.title')}
+              </p>
+              {budgetQuery.isLoading ? (
+                <Skeleton className="h-8 w-48" />
+              ) : (
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {budgetQuery.data?.name ?? "Loading..."}
+                </h1>
+              )}
+              {budgetQuery.data?.description && (
+                <p className="text-muted-foreground max-w-md">
+                  {budgetQuery.data.description}
                 </p>
-                {budgetQuery.isLoading ? (
-                  <Skeleton className="h-8 w-48" />
-                ) : (
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    {budgetQuery.data?.name ?? "Loading..."}
-                  </h1>
-                )}
-                {budgetQuery.data?.description && (
-                  <p className="text-muted-foreground max-w-md">
-                    {budgetQuery.data.description}
-                  </p>
-                )}
-              </div>
-              
-              {/* Desktop Quick Add Button */}
-              <div className="hidden md:block">
-                <QuickAddEntry
-                  budgetId={params.id}
-                  trigger={
-                    <Button className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      {t('entry.addEntry')}
-                    </Button>
-                  }
-                />
-              </div>
+              )}
             </div>
             
             {/* Enhanced Net Balance Display */}
@@ -208,16 +199,18 @@ export default function BudgetLayout({ children }: PropsWithChildren) {
       {children}
       
       {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 md:hidden z-50">
-        <QuickAddEntry
-          budgetId={params.id}
-          trigger={
-            <Button size="lg" className="h-14 w-14 rounded-full shadow-lg">
-              <Plus className="h-6 w-6" />
-            </Button>
-          }
-        />
-      </div>
+      {permissions.canAddEntries && (
+        <div className="fixed bottom-6 right-6 md:hidden z-50">
+          <QuickAddEntry
+            budgetId={params.id}
+            trigger={
+              <Button size="lg" className="h-14 w-14 rounded-full shadow-lg">
+                <Plus className="h-6 w-6" />
+              </Button>
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

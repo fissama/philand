@@ -34,7 +34,9 @@ pub struct DeleteEntryResp {
     pub message: String,
 }
 
-pub async fn list(State(state): State<Arc<AppState>>, Path(budget_id): Path<String>, Query(filter): Query<EntryFilter>) -> Result<Json<Vec<Entry>>, AppError> {
+pub async fn list(State(state): State<Arc<AppState>>, Extension(claims): Extension<crate::handler::auth::Claims>, Path(budget_id): Path<String>, Query(filter): Query<EntryFilter>) -> Result<Json<Vec<Entry>>, AppError> {
+    // Ensure user has at least viewer access to this budget
+    crate::manager::biz::authz::ensure_role(&state.pool, &budget_id, &claims.sub, crate::manager::models::role::Role::Viewer).await?;
     Ok(Json(EntryService::list(
         &state.pool,
         &budget_id,

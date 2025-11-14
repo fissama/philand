@@ -1,4 +1,4 @@
-use crate::manager::{models::budget::{Budget, CreateBudgetReq}};
+use crate::manager::{models::budget::{Budget, BudgetWithRole, CreateBudgetReq}};
 use crate::handler::budgets::UpdateBudgetReq;
 use crate::utils::{database::database::DbPool, error::error::AppError};
 use crate::manager::{repository::budgets::BudgetRepo};
@@ -8,6 +8,14 @@ pub struct BudgetService;
 impl BudgetService {
     pub async fn list(pool: &DbPool, owner_id: Option<String>, query: Option<String>) -> Result<Vec<Budget>, AppError> {
         BudgetRepo::list(pool, owner_id, query).await
+    }
+    
+    pub async fn list_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<Budget>, AppError> {
+        BudgetRepo::list_for_user(pool, user_id, query).await
+    }
+    
+    pub async fn list_with_roles_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<BudgetWithRole>, AppError> {
+        BudgetRepo::list_with_roles_for_user(pool, user_id, query).await
     }
     
     pub async fn get(pool: &DbPool, id: &str) -> Result<Budget, AppError> {

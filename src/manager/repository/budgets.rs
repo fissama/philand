@@ -1,5 +1,6 @@
-use crate::manager::{models::budget::{Budget, CreateBudgetReq}};
+use crate::manager::{models::budget::{Budget, BudgetWithRole, CreateBudgetReq}};
 use crate::utils::{database::database::DbPool, error::error::AppError};
+use sqlx::Row;
 pub struct BudgetRepo;
 
 impl BudgetRepo {
@@ -28,6 +29,76 @@ impl BudgetRepo {
         
         Ok(query_builder.fetch_all(pool).await?)
     }
+    
+    pub async fn list_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<Budget>, AppError> {
+        let mut sql = String::from(
+            "SELECT b.* FROM budgets b 
+             INNER JOIN budget_members bm ON b.id = bm.budget_id 
+             WHERE bm.user_id = ? AND b.archived = 0"
+        );
+        let mut bindings = vec![user_id.to_string()];
+        
+        if let Some(q) = query {
+            sql.push_str(" AND (b.name LIKE ? OR b.description LIKE ?)");
+            let search_pattern = format!("%{}%", q);
+            bindings.push(search_pattern.clone());
+            bindings.push(search_pattern);
+        }
+        
+        sql.push_str(" ORDER BY b.created_at DESC");
+        
+        let mut query_builder = sqlx::query_as::<_, Budget>(&sql);
+        for binding in bindings {
+            query_builder = query_builder.bind(binding);
+        }
+        
+        Ok(query_builder.fetch_all(pool).await?)
+    }
+    
+    pub async fn list_with_roles_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<BudgetWithRole>, AppError> {
+        let mut sql = String::from(
+            "SELECT b.id, b.owner_id, b.name, b.currency_code, b.description, b.archived, 
+                    b.created_at, b.updated_at, bm.role as user_role
+             FROM budgets b 
+             INNER JOIN budget_members bm ON b.id = bm.budget_id 
+             WHERE bm.user_id = ? AND b.archived = 0"
+        );
+        let mut bindings = vec![user_id.to_string()];
+        
+        if let Some(q) = query {
+            sql.push_str(" AND (b.name LIKE ? OR b.description LIKE ?)");
+            let search_pattern = format!("%{}%", q);
+            bindings.push(search_pattern.clone());
+            bindings.push(search_pattern);
+        }
+        
+        sql.push_str(" ORDER BY b.created_at DESC");
+        
+        let rows = sqlx::query(&sql);
+        let mut query_builder = rows;
+        for binding in bindings {
+            query_builder = query_builder.bind(binding);
+        }
+        
+        let results = query_builder.fetch_all(pool).await?;
+        
+        let budgets = results.into_iter().map(|row| {
+            BudgetWithRole {
+                id: row.get("id"),
+                owner_id: row.get("owner_id"),
+                name: row.get("name"),
+                currency_code: row.get("currency_code"),
+                description: row.get("description"),
+                archived: row.get("archived"),
+                created_at: row.get("created_at"),
+                updated_at: row.get("updated_at"),
+                user_role: row.get("user_role"),
+            }
+        }).collect();
+        
+        Ok(budgets)
+    }
+    
     pub async fn get(pool: &DbPool, id: &str) -> Result<Budget, AppError> {
         sqlx::query_as::<_, Budget>("SELECT * FROM budgets WHERE id = ?").bind(id).fetch_optional(pool).await?
             .ok_or(AppError::NotFound)
@@ -70,8 +141,8 @@ impl BudgetRepo {
         let result = sqlx::query_as::<_, (i64, i64)>(
             r#"
             SELECT 
-                COALESCE(SUM(CASE WHEN kind = 'income' THEN amount_minor ELSE 0 END), 0) as income,
-                COALESCE(SUM(CASE WHEN kind = 'expense' THEN amount_minor ELSE 0 END), 0) as expense
+                CAST(COALESCE(SUM(CASE WHEN kind = 'income' THEN amount_minor ELSE 0 END), 0) AS SIGNED) as income,
+                CAST(COALESCE(SUM(CASE WHEN kind = 'expense' THEN amount_minor ELSE 0 END), 0) AS SIGNED) as expense
             FROM entries
             WHERE budget_id = ? AND deleted_at IS NULL
             "#
