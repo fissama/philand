@@ -59,6 +59,7 @@ export default function BudgetEntriesPage() {
   const [filters, setFilters] = useState<{ 
     kind?: "income" | "expense" | "all"; 
     categoryId?: string;
+    memberId?: string;
     from?: string; 
     to?: string;
     search?: string;
@@ -89,12 +90,18 @@ export default function BudgetEntriesPage() {
     queryFn: () => api.categories.list(params.id)
   });
 
+  const membersQuery = useQuery({
+    queryKey: ["members", params.id],
+    queryFn: () => api.members.list(params.id)
+  });
+
   const entriesQuery = useQuery({
     queryKey: ["entries", params.id, filters],
     queryFn: () =>
       api.entries.list(params.id, {
         kind: filters.kind && filters.kind !== "all" ? filters.kind : undefined,
         categoryId: filters.categoryId,
+        memberId: filters.memberId,
         from: filters.from,
         to: filters.to,
         search: filters.search,
@@ -131,6 +138,7 @@ export default function BudgetEntriesPage() {
   });
 
   const categories = categoriesQuery.data ?? [];
+  const members = membersQuery.data ?? [];
 
   const handleSubmit = (values: FormValues) => {
     mutation.mutate(values);
@@ -344,6 +352,23 @@ export default function BudgetEntriesPage() {
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name} ({category.kind})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label htmlFor="filter-member" className="text-base sm:text-sm font-medium text-muted-foreground">{t('entry.member')}:</label>
+                <select
+                  id="filter-member"
+                  className="h-12 sm:h-9 rounded-md border border-input bg-transparent px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={filters.memberId || "all"}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, memberId: e.target.value === "all" ? undefined : e.target.value, page: 1 }))}
+                >
+                  <option value="all">{t('entry.allMembers')}</option>
+                  {members.map((member) => (
+                    <option key={member.user_id} value={member.user_id}>
+                      {member.user_name || member.user_email}
                     </option>
                   ))}
                 </select>

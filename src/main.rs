@@ -107,6 +107,7 @@ async fn main() -> anyhow::Result<()> {
     let auth_routes = Router::new()
         .route("/auth/signup", post(handler::auth::signup))
         .route("/auth/login", post(handler::auth::login))
+        .route("/auth/google", post(handler::google_auth::google_auth))
         .route("/auth/forgot/email", post(handler::auth::forgot_email))
         .route("/auth/forgot/otp", post(handler::auth::forgot_otp))
         .route("/auth/reset", post(handler::auth::reset_password))

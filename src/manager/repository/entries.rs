@@ -11,36 +11,46 @@ impl EntryRepo {
         to: Option<chrono::NaiveDate>,
         kind: Option<String>,
         category_id: Option<String>,
+        member_id: Option<String>,
         search: Option<String>,
         sort_by: Option<String>,
         sort_order: Option<String>,
         page: Option<u32>,
         per_page: Option<u32>,
     ) -> Result<Vec<Entry>, AppError> {
-        let mut q = String::from("SELECT * FROM entries WHERE budget_id = ? AND deleted_at IS NULL");
+        let mut q = String::from(
+            "SELECT e.id, e.budget_id, e.category_id, e.kind, e.amount_minor, e.currency_code, \
+             e.entry_date, e.description, e.counterparty, e.created_by, e.updated_by, \
+             e.created_at, e.updated_at, e.deleted_at, \
+             u.name as member_name, u.email as member_email, u.avatar as member_avatar \
+             FROM entries e \
+             INNER JOIN users u ON e.created_by = u.id \
+             WHERE e.budget_id = ? AND e.deleted_at IS NULL"
+        );
         
         // Filters
-        if kind.is_some() { q.push_str(" AND kind = ?"); }
-        if category_id.is_some() { q.push_str(" AND category_id = ?"); }
-        if from.is_some() { q.push_str(" AND entry_date >= ?"); }
-        if to.is_some() { q.push_str(" AND entry_date <= ?"); }
+        if kind.is_some() { q.push_str(" AND e.kind = ?"); }
+        if category_id.is_some() { q.push_str(" AND e.category_id = ?"); }
+        if member_id.is_some() { q.push_str(" AND e.created_by = ?"); }
+        if from.is_some() { q.push_str(" AND e.entry_date >= ?"); }
+        if to.is_some() { q.push_str(" AND e.entry_date <= ?"); }
         
         // Search in description (supports Vietnamese with approximate matching)
         if search.is_some() {
-            q.push_str(" AND (description LIKE ? OR counterparty LIKE ?)");
+            q.push_str(" AND (e.description LIKE ? OR e.counterparty LIKE ?)");
         }
         
         // Sorting
         let sort_field = match sort_by.as_deref() {
-            Some("amount") => "amount_minor",
-            Some("description") => "description",
-            _ => "entry_date", // default to date
+            Some("amount") => "e.amount_minor",
+            Some("description") => "e.description",
+            _ => "e.entry_date", // default to date
         };
         let order = match sort_order.as_deref() {
             Some("asc") => "ASC",
             _ => "DESC", // default to descending
         };
-        q.push_str(&format!(" ORDER BY {} {}, created_at DESC", sort_field, order));
+        q.push_str(&format!(" ORDER BY {} {}, e.created_at DESC", sort_field, order));
         
         // Pagination
         let per_page = per_page.unwrap_or(30).min(100); // default 30, max 100
@@ -54,6 +64,7 @@ impl EntryRepo {
         let mut query = sqlx::query_as::<_, Entry>(&q).bind(budget_id);
         if let Some(k) = kind { query = query.bind(k); }
         if let Some(c) = category_id { query = query.bind(c); }
+        if let Some(m) = member_id { query = query.bind(m); }
         if let Some(f) = from { query = query.bind(f); }
         if let Some(t) = to { query = query.bind(t); }
         if let Some(ref pattern) = search_pattern {
@@ -72,12 +83,22 @@ impl EntryRepo {
             .bind(&id).bind(budget_id).bind(&req.category_id).bind(&req.kind).bind(req.amount_minor)
             .bind(&currency).bind(req.entry_date).bind(&req.description).bind(&req.counterparty).bind(&req.created_by)
             .execute(pool).await?;
-        Ok(sqlx::query_as::<_, Entry>("SELECT * FROM entries WHERE id = ?").bind(&id).fetch_one(pool).await?)
+        Ok(sqlx::query_as::<_, Entry>(
+            "SELECT e.*, u.name as member_name, u.email as member_email, u.avatar as member_avatar \
+             FROM entries e \
+             INNER JOIN users u ON e.created_by = u.id \
+             WHERE e.id = ?"
+        ).bind(&id).fetch_one(pool).await?)
     }
     
     pub async fn update(pool: &DbPool, budget_id: &str, entry_id: &str, req: UpdateEntryReq, user_id: &str) -> Result<Entry, AppError> {
         // First check if entry exists and belongs to the budget
-        let mut entry = sqlx::query_as::<_, Entry>("SELECT * FROM entries WHERE id = ? AND budget_id = ? AND deleted_at IS NULL")
+        let mut entry = sqlx::query_as::<_, Entry>(
+            "SELECT e.*, u.name as member_name, u.email as member_email, u.avatar as member_avatar \
+             FROM entries e \
+             INNER JOIN users u ON e.created_by = u.id \
+             WHERE e.id = ? AND e.budget_id = ? AND e.deleted_at IS NULL"
+        )
             .bind(entry_id)
             .bind(budget_id)
             .fetch_optional(pool)

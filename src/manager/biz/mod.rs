@@ -6,3 +6,4 @@ pub mod authz;
 pub mod members;
 pub mod password_reset;
 pub mod profile;
+pub mod google_auth;

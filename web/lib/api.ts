@@ -74,6 +74,11 @@ export const api = {
   }) => request<{ token: string; user: UserProfile }>("/auth/signup", { method: "POST", body: input }),
   login: (input: { email: string; password: string }) =>
     request<{ token: string; user: UserProfile }>("/auth/login", { method: "POST", body: input }),
+  googleAuth: (code: string) =>
+    request<{ token: string; user: UserProfile }>("/auth/google", {
+      method: "POST",
+      body: { code }
+    }),
   logout: () => {
     authStore.getState().clearAuth();
   },
@@ -155,6 +160,7 @@ export const api = {
         search?: string;
         sortBy?: "date" | "amount" | "description";
         sortOrder?: "asc" | "desc";
+        memberId?: string;
       }
     ) => {
       // Convert camelCase to snake_case for backend
@@ -168,6 +174,7 @@ export const api = {
       if (params.sortOrder) queryParams.sort_order = params.sortOrder;
       if (params.page) queryParams.page = String(params.page);
       if (params.perPage) queryParams.per_page = String(params.perPage);
+      if (params.memberId) queryParams.member_id = params.memberId;
       
       return request<Entry[]>(`/api/budgets/${budgetId}/entries?${new URLSearchParams(queryParams).toString()}`);
     },
@@ -347,6 +354,10 @@ export interface Entry {
   counterparty?: string;
   created_by: string;
   created_at: string;
+  // Member information
+  member_name: string;
+  member_email: string;
+  member_avatar?: string;
 }
 
 export interface EntryListResponse {
@@ -373,4 +384,5 @@ export interface Member {
   user_name?: string;
   user_email: string;
   role: Role;
+  avatar?: string;
 }

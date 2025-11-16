@@ -9,6 +9,7 @@ pub struct Config {
     cors_origins: Vec<String>,
     rate_limit_cfg: RateLimitConfig,
     reset_cfg: ResetConfig,
+    google_cfg: GoogleConfig,
 }
 
 impl Config {
@@ -34,6 +35,10 @@ impl Config {
 
     pub fn get_reset_config(&self) -> ResetConfig {
         self.reset_cfg.clone()
+    }
+
+    pub fn get_google_cfg(&self) -> GoogleConfig {
+        self.google_cfg.clone()
     }
 }
 
@@ -101,6 +106,27 @@ pub struct ResetConfig {
     pub otp_ttl_min: i64,
 }
 
+#[derive(Debug, Clone)]
+pub struct GoogleConfig {
+    client_id: String,
+    client_secret: String,
+    redirect_uri: String,
+}
+
+impl GoogleConfig {
+    pub fn get_client_id(&self) -> String {
+        self.client_id.clone()
+    }
+
+    pub fn get_client_secret(&self) -> String {
+        self.client_secret.clone()
+    }
+
+    pub fn get_redirect_uri(&self) -> String {
+        self.redirect_uri.clone()
+    }
+}
+
 static mut GLOBAL_CONFIG: Option<Config> = None;
 
 pub fn init() {
@@ -131,6 +157,11 @@ pub fn init() {
             reset_cfg: ResetConfig {
                 token_ttl_min: env::var("RESET_TOKEN_TTL_MIN").unwrap_or_else(|_| "15".to_string()).parse().unwrap_or(15),
                 otp_ttl_min: env::var("RESET_OTP_TTL_MIN").unwrap_or_else(|_| "10".to_string()).parse().unwrap_or(10),
+            },
+            google_cfg: GoogleConfig {
+               client_id: env::var("GOOGLE_CLIENT_ID").unwrap_or_else(|_| "your-google-client-id.apps.googleusercontent.com".to_string()),
+               client_secret: env::var("GOOGLE_CLIENT_SECRET").unwrap_or_else(|_| "your-google-client-secret".to_string()),
+               redirect_uri: env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:3000/auth/google/callback".to_string()),
             },
         });
     }
