@@ -12,13 +12,14 @@ impl EntryService {
         to: Option<chrono::NaiveDate>,
         kind: Option<String>,
         category_id: Option<String>,
+        member_id: Option<String>,
         search: Option<String>,
         sort_by: Option<String>,
         sort_order: Option<String>,
         page: Option<u32>,
         per_page: Option<u32>,
     ) -> Result<Vec<Entry>, AppError> {
-        EntryRepo::list(pool, budget_id, from, to, kind, category_id, search, sort_by, sort_order, page, per_page).await
+        EntryRepo::list(pool, budget_id, from, to, kind, category_id, member_id, search, sort_by, sort_order, page, per_page).await
     }
     pub async fn create(pool: &DbPool, budget_id: &str, req: CreateEntryReq) -> Result<Entry, AppError> {
         let budget = BudgetRepo::get(pool, budget_id).await?;

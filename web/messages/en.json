@@ -8,6 +8,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
+    "update": "Update",
     "search": "Search",
     "filter": "Filter",
     "close": "Close",
@@ -18,7 +19,11 @@
     "actions": "Actions",
     "updated": "Updated",
     "optional": "optional",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "all": "All",
+    "total": "Total",
+    "status": "Status",
+    "retry": "Retry"
   },
   "nav": {
     "dashboard": "Home",
@@ -51,7 +56,19 @@
     "checkEmail": "Check your email for the verification code",
     "enterEmailForCode": "Enter your email to receive a verification code",
     "sending": "Sending...",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "googleSignIn": "Continue with Google",
+    "googleSignInSuccess": "Signed in successfully with Google",
+    "googleSignInFailed": "Failed to sign in with Google",
+    "googleConfigError": "Google OAuth is not configured correctly. Please contact support.",
+    "googleSessionExpired": "The sign-in session expired. Please try again.",
+    "googleEmailNotVerified": "Please verify your email address with Google first.",
+    "googleAccessDenied": "Your Google account is not authorized. Please contact support.",
+    "googleServerError": "Something went wrong on our end. Please try again in a moment.",
+    "googleTooManyAttempts": "Too many sign-in attempts. Please wait a moment before trying again.",
+    "googlePopupBlocked": "Unable to open Google sign-in. Please check your popup blocker.",
+    "googleCancelled": "Sign-in was cancelled. Click the button to try again.",
+    "googlePermissionDenied": "Access was denied. Please grant the required permissions."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -143,7 +160,11 @@
     "add": "Add",
     "quickAddDescription": "Quickly add a new transaction to any budget",
     "selectBudgetFirst": "Select a budget first",
-    "noCategoriesForBudget": "No categories available for this budget"
+    "noCategoriesForBudget": "No categories available for this budget",
+    "member": "Member",
+    "filterByMember": "Filter by Member",
+    "allMembers": "All Members",
+    "createdBy": "Created by"
   },
   "category": {
     "categories": "Categories",
@@ -159,7 +180,27 @@
     "mediaSpend": "Media spend",
     "addNewCategory": "Add a new category to organize your transactions",
     "selectType": "Select category type",
-    "contactOwner": "Contact the budget owner to request category creation access"
+    "contactOwner": "Contact the budget owner to request category creation access",
+    "icon": "Icon",
+    "hidden": "Hidden",
+    "hiddenDescription": "Hidden categories won't appear in entry forms",
+    "categoryCreated": "Category created successfully",
+    "categoryUpdated": "Category updated successfully",
+    "categoryDeleted": "Category deleted successfully",
+    "confirmDelete": "Are you sure you want to delete this category?",
+    "deleteConfirmation": "Are you sure you want to delete '{name}'? This action cannot be undone.",
+    "editCategoryDescription": "Update category details, color, and icon",
+    "manageCategories": "Manage Categories",
+    "viewOnlyMode": "View Only Mode",
+    "presetColors": "Preset Colors",
+    "customColor": "Custom Color",
+    "selectIcon": "Select Icon",
+    "searchIcons": "Search icons...",
+    "noIconsFound": "No icons found",
+    "iconsAvailable": "icons available",
+    "update": "Update Category",
+    "visible": "Visible",
+    "noHiddenCategories": "No hidden categories"
   },
   "overview": {
     "title": "Overview",

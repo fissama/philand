@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/features/auth/auth-logo";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { api } from "@/lib/api";
 import { authStore } from "@/lib/auth";
 import { toast } from "sonner";
@@ -106,6 +107,21 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        {/* Google Sign-In */}
+        <GoogleSignInButton />
 
         <div className="text-center">
           <Link 

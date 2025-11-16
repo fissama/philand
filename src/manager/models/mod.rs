@@ -4,3 +4,4 @@ pub mod category;
 pub mod entry;
 pub mod role;
 pub mod member;
+pub mod google_auth;

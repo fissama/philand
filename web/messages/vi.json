@@ -8,6 +8,7 @@
     "delete": "Xóa",
     "edit": "Sửa",
     "create": "Tạo mới",
+    "update": "Cập nhật",
     "search": "Tìm kiếm",
     "filter": "Lọc",
     "close": "Đóng",
@@ -18,7 +19,11 @@
     "actions": "Hành động",
     "updated": "Đã cập nhật",
     "optional": "tùy chọn",
-    "clearSearch": "Xóa tìm kiếm"
+    "clearSearch": "Xóa tìm kiếm",
+    "all": "Tất cả",
+    "total": "Tổng cộng",
+    "status": "Trạng thái",
+    "retry": "Thử lại"
   },
   "nav": {
     "dashboard": "Trang chủ",
@@ -51,7 +56,19 @@
     "checkEmail": "Kiểm tra email để nhận mã xác thực",
     "enterEmailForCode": "Nhập email để nhận mã xác thực",
     "sending": "Đang gửi...",
-    "backToLogin": "Quay lại đăng nhập"
+    "backToLogin": "Quay lại đăng nhập",
+    "googleSignIn": "Tiếp tục với Google",
+    "googleSignInSuccess": "Đăng nhập thành công với Google",
+    "googleSignInFailed": "Đăng nhập với Google thất bại",
+    "googleConfigError": "Google OAuth chưa được cấu hình đúng. Vui lòng liên hệ hỗ trợ.",
+    "googleSessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng thử lại.",
+    "googleEmailNotVerified": "Vui lòng xác thực địa chỉ email của bạn với Google trước.",
+    "googleAccessDenied": "Tài khoản Google của bạn không được phép. Vui lòng liên hệ hỗ trợ.",
+    "googleServerError": "Đã xảy ra lỗi từ phía chúng tôi. Vui lòng thử lại sau.",
+    "googleTooManyAttempts": "Quá nhiều lần thử đăng nhập. Vui lòng đợi một chút trước khi thử lại.",
+    "googlePopupBlocked": "Không thể mở cửa sổ đăng nhập Google. Vui lòng kiểm tra trình chặn popup.",
+    "googleCancelled": "Đăng nhập đã bị hủy. Nhấp vào nút để thử lại.",
+    "googlePermissionDenied": "Quyền truy cập bị từ chối. Vui lòng cấp các quyền cần thiết."
   },
   "dashboard": {
     "title": "Trang chủ",
@@ -143,7 +160,11 @@
     "add": "Thêm",
     "quickAddDescription": "Nhanh chóng thêm giao dịch mới vào bất kỳ ngân sách nào",
     "selectBudgetFirst": "Chọn ngân sách trước",
-    "noCategoriesForBudget": "Không có danh mục nào cho ngân sách này"
+    "noCategoriesForBudget": "Không có danh mục nào cho ngân sách này",
+    "member": "Thành viên",
+    "filterByMember": "Lọc theo thành viên",
+    "allMembers": "Tất cả thành viên",
+    "createdBy": "Tạo bởi"
   },
   "category": {
     "categories": "Danh mục",
@@ -159,7 +180,27 @@
     "mediaSpend": "Chi tiêu truyền thông",
     "addNewCategory": "Thêm danh mục mới để tổ chức các giao dịch của bạn",
     "selectType": "Chọn loại danh mục",
-    "contactOwner": "Liên hệ chủ sở hữu ngân sách để yêu cầu quyền tạo danh mục"
+    "contactOwner": "Liên hệ chủ sở hữu ngân sách để yêu cầu quyền tạo danh mục",
+    "icon": "Biểu tượng",
+    "hidden": "Ẩn",
+    "hiddenDescription": "Danh mục ẩn sẽ không xuất hiện trong biểu mẫu nhập liệu",
+    "categoryCreated": "Tạo danh mục thành công",
+    "categoryUpdated": "Cập nhật danh mục thành công",
+    "categoryDeleted": "Xóa danh mục thành công",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa danh mục này?",
+    "deleteConfirmation": "Bạn có chắc chắn muốn xóa '{name}'? Hành động này không thể hoàn tác.",
+    "editCategoryDescription": "Cập nhật chi tiết danh mục, màu sắc và biểu tượng",
+    "manageCategories": "Quản lý Danh mục",
+    "viewOnlyMode": "Chế độ Chỉ xem",
+    "presetColors": "Màu có sẵn",
+    "customColor": "Màu tùy chỉnh",
+    "selectIcon": "Chọn biểu tượng",
+    "searchIcons": "Tìm kiếm biểu tượng...",
+    "noIconsFound": "Không tìm thấy biểu tượng",
+    "iconsAvailable": "biểu tượng có sẵn",
+    "update": "Cập nhật Danh mục",
+    "visible": "Hiển thị",
+    "noHiddenCategories": "Không có danh mục ẩn"
   },
   "overview": {
     "title": "Tổng quan",

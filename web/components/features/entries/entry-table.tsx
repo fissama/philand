@@ -9,6 +9,8 @@ import type { Entry, CategoryKind } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { MemberAvatar } from "@/components/ui/member-avatar";
+import { CategoryIcon } from "@/components/features/categories/category-icon";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +25,7 @@ import { toast } from "sonner";
 interface EntryTableProps {
   entries?: Entry[];
   loading?: boolean;
-  categories?: Array<{ id: string; name: string; kind: CategoryKind }>;
+  categories?: Array<{ id: string; name: string; kind: CategoryKind; color?: string; icon?: string }>;
   sortBy?: "date" | "amount" | "description";
   sortOrder?: "asc" | "desc";
   onSort?: (field: "date" | "amount" | "description") => void;
@@ -114,6 +116,7 @@ export function EntryTable({
                 </th>
                 <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">{t('entry.category')}</th>
                 <th className="pb-3 text-center text-xs font-semibold uppercase text-muted-foreground">{t('entry.type')}</th>
+                <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">{t('entry.member')}</th>
                 <th 
                   className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
                   onClick={() => onSort?.("amount")}
@@ -145,8 +148,27 @@ export function EntryTable({
                     <td className="py-3 text-sm font-medium">
                       {entry.description || entry.counterparty || t('entry.description')}
                     </td>
-                    <td className="py-3 text-sm text-muted-foreground">
-                      {category?.name || t('entry.noCategory')}
+                    <td className="py-3">
+                      {category ? (
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="p-1.5 rounded-md shrink-0"
+                            style={{ 
+                              backgroundColor: `${category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")}20`,
+                              color: category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")
+                            }}
+                          >
+                            <CategoryIcon 
+                              icon={category.icon} 
+                              color={category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")} 
+                              size={14} 
+                            />
+                          </div>
+                          <span className="text-sm font-medium truncate">{category.name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{t('entry.noCategory')}</span>
+                      )}
                     </td>
                     <td className="py-3 text-center">
                       <span className={cn(
@@ -157,6 +179,19 @@ export function EntryTable({
                       )}>
                         {entry.kind === "income" ? t('entry.income') : t('entry.expense')}
                       </span>
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <MemberAvatar
+                          name={entry.member_name}
+                          email={entry.member_email}
+                          avatar={entry.member_avatar}
+                          size="sm"
+                        />
+                        <span className="text-sm text-muted-foreground hidden lg:inline">
+                          {entry.member_name}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3 text-right text-sm font-semibold whitespace-nowrap">
                       <span className={entry.kind === "income" ? "text-emerald-600" : "text-red-600"}>
@@ -229,6 +264,15 @@ export function EntryTable({
                           )}>
                             {entry.kind === "income" ? t('entry.income') : t('entry.expense')}
                           </span>
+                          <MemberAvatar
+                            name={entry.member_name}
+                            email={entry.member_email}
+                            avatar={entry.member_avatar}
+                            size="sm"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {entry.member_name}
+                          </span>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
@@ -244,10 +288,31 @@ export function EntryTable({
 
                     {/* Bottom row: Date, Category, and Actions */}
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {new Date(entry.entry_date).toLocaleDateString()} • {category?.name || t('entry.noCategory')}
-                        </p>
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(entry.entry_date).toLocaleDateString()}
+                        </span>
+                        {category && (
+                          <>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <div 
+                                className="p-1 rounded shrink-0"
+                                style={{ 
+                                  backgroundColor: `${category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")}20`,
+                                  color: category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")
+                                }}
+                              >
+                                <CategoryIcon 
+                                  icon={category.icon} 
+                                  color={category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")} 
+                                  size={12} 
+                                />
+                              </div>
+                              <span className="text-xs font-medium truncate">{category.name}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                       {canEdit && (
                         <div className="flex gap-1 shrink-0">
