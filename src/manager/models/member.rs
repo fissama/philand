@@ -16,6 +16,7 @@ pub struct BudgetMemberWithUser {
     pub user_name: Option<String>,
     pub user_email: String,
     pub role: String,
+    pub avatar: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

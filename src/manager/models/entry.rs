@@ -18,6 +18,10 @@ pub struct Entry {
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub deleted_at: Option<chrono::NaiveDateTime>,
+    // Member information
+    pub member_name: String,
+    pub member_email: String,
+    pub member_avatar: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -12,6 +12,7 @@ pub struct EntryFilter {
     to: Option<chrono::NaiveDate>,
     kind: Option<String>,
     category_id: Option<String>,
+    member_id: Option<String>,
     search: Option<String>,
     sort_by: Option<String>, // "date" (default), "amount"
     sort_order: Option<String>, // "desc" (default), "asc"
@@ -44,6 +45,7 @@ pub async fn list(State(state): State<Arc<AppState>>, Extension(claims): Extensi
         filter.to,
         filter.kind,
         filter.category_id,
+        filter.member_id,
         filter.search,
         filter.sort_by,
         filter.sort_order,

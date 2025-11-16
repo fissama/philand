@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { api, type Entry, type CategoryKind } from "@/lib/api";
+import { CategoryIcon } from "@/components/features/categories/category-icon";
 import { Textarea } from "@/components/ui/textarea";
 
 const entryFormSchema = z.object({
@@ -37,7 +38,7 @@ interface EntryFormProps {
   description?: string;
   showBudgetSelector?: boolean;
   defaultBudgetId?: string;
-  categories?: Array<{ id: string; name: string; kind: CategoryKind }>;
+  categories?: Array<{ id: string; name: string; kind: CategoryKind; color?: string; icon?: string }>;
 }
 
 const NO_CATEGORY = "__no_category__";
@@ -275,10 +276,15 @@ export function EntryForm({
                 {filteredCategories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     <div className="flex items-center gap-2">
-                      <div className={cn(
-                        "w-3 h-3 rounded-full shrink-0",
-                        category.kind === "income" ? "bg-green-500" : "bg-red-500"
-                      )} />
+                      <div 
+                        className="p-1 rounded shrink-0"
+                        style={{ 
+                          backgroundColor: `${category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")}20`,
+                          color: category.color || (category.kind === "income" ? "#22C55E" : "#EF4444")
+                        }}
+                      >
+                        <CategoryIcon icon={category.icon} color={category.color} size={12} />
+                      </div>
                       <span className="truncate">{category.name}</span>
                     </div>
                   </SelectItem>

@@ -74,6 +74,11 @@ export const api = {
   }) => request<{ token: string; user: UserProfile }>("/auth/signup", { method: "POST", body: input }),
   login: (input: { email: string; password: string }) =>
     request<{ token: string; user: UserProfile }>("/auth/login", { method: "POST", body: input }),
+  googleAuth: (code: string) =>
+    request<{ token: string; user: UserProfile }>("/auth/google", {
+      method: "POST",
+      body: { code }
+    }),
   logout: () => {
     authStore.getState().clearAuth();
   },
@@ -125,10 +130,21 @@ export const api = {
   },
   categories: {
     list: (budgetId: string) => request<CategorySummary[]>(`/api/budgets/${budgetId}/categories`),
-    create: (budgetId: string, input: { name: string; kind: CategoryKind }) =>
+    create: (budgetId: string, input: { name: string; kind: CategoryKind; color?: string; icon?: string; is_hidden?: boolean }) =>
       request<CategorySummary>(`/api/budgets/${budgetId}/categories`, {
         method: "POST",
         body: input
+      }),
+    get: (budgetId: string, categoryId: string) =>
+      request<CategorySummary>(`/api/budgets/${budgetId}/categories/${categoryId}`),
+    update: (budgetId: string, categoryId: string, input: { name?: string; color?: string; icon?: string; is_hidden?: boolean }) =>
+      request<CategorySummary>(`/api/budgets/${budgetId}/categories/${categoryId}`, {
+        method: "PATCH",
+        body: input
+      }),
+    delete: (budgetId: string, categoryId: string) =>
+      request<{ message: string }>(`/api/budgets/${budgetId}/categories/${categoryId}`, {
+        method: "DELETE"
       })
   },
   entries: {
@@ -144,6 +160,7 @@ export const api = {
         search?: string;
         sortBy?: "date" | "amount" | "description";
         sortOrder?: "asc" | "desc";
+        memberId?: string;
       }
     ) => {
       // Convert camelCase to snake_case for backend
@@ -157,6 +174,7 @@ export const api = {
       if (params.sortOrder) queryParams.sort_order = params.sortOrder;
       if (params.page) queryParams.page = String(params.page);
       if (params.perPage) queryParams.per_page = String(params.perPage);
+      if (params.memberId) queryParams.member_id = params.memberId;
       
       return request<Entry[]>(`/api/budgets/${budgetId}/entries?${new URLSearchParams(queryParams).toString()}`);
     },
@@ -317,6 +335,11 @@ export interface CategorySummary {
   id: string;
   name: string;
   kind: CategoryKind;
+  is_hidden: boolean;
+  color?: string;
+  icon?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Entry {
@@ -331,6 +354,10 @@ export interface Entry {
   counterparty?: string;
   created_by: string;
   created_at: string;
+  // Member information
+  member_name: string;
+  member_email: string;
+  member_avatar?: string;
 }
 
 export interface EntryListResponse {
@@ -357,4 +384,5 @@ export interface Member {
   user_name?: string;
   user_email: string;
   role: Role;
+  avatar?: string;
 }

@@ -11,6 +11,7 @@ pub mod summaries;
 pub mod auth;
 pub mod members;
 pub mod profile;
+pub mod google_auth;
 
 #[derive(Clone)]
 pub struct AppState { 

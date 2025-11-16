@@ -11,7 +11,7 @@ impl MemberRepo {
     
     pub async fn list_with_users(pool: &DbPool, budget_id: &str) -> Result<Vec<BudgetMemberWithUser>, AppError> {
         let rows = sqlx::query(
-            "SELECT bm.budget_id, bm.user_id, bm.role, u.name as user_name, u.email as user_email 
+            "SELECT bm.budget_id, bm.user_id, bm.role, u.name as user_name, u.email as user_email, u.avatar 
              FROM budget_members bm 
              INNER JOIN users u ON bm.user_id = u.id 
              WHERE bm.budget_id = ? 
@@ -35,6 +35,7 @@ impl MemberRepo {
                 user_name: row.get("user_name"),
                 user_email: row.get("user_email"),
                 role: row.get("role"),
+                avatar: row.get("avatar"),
             }
         }).collect();
 
