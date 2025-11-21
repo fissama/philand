@@ -60,8 +60,26 @@ async fn main() -> anyhow::Result<()> {
     ));
     
     let state = Arc::new(handler::AppState { 
-        pool,
+        pool: pool.clone(),
         rate_limiter: rate_limiter.clone(),
+    });
+    
+    // Start cleanup cron job (runs every 24 hours)
+    let cleanup_pool = pool.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(24 * 60 * 60)); // 24 hours
+        loop {
+            interval.tick().await;
+            info!("Running cleanup job for soft-deleted records...");
+            match utils::cleanup::CleanupService::cleanup_daily(&cleanup_pool).await {
+                Ok(stats) => {
+                    info!("{}", stats);
+                }
+                Err(e) => {
+                    tracing::error!("Cleanup job failed: {}", e);
+                }
+            }
+        }
     });
 
     let cors_layer = {
@@ -101,6 +119,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))
         .route("/api/budgets/{id}/members", get(handler::members::list).post(handler::members::upsert))
         .route("/api/budgets/{id}/members/{user_id}", patch(handler::members::update).delete(handler::members::delete))
+        .route("/api/admin/cleanup", post(handler::cleanup::manual_cleanup))
         .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 
     // Auth routes with rate limiting

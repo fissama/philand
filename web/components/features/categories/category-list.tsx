@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TrendingUp, TrendingDown, FolderOpen, MoreVertical, Edit, Trash2, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { withToast, api } from "@/lib/api-with-toast";
 import { cn } from "@/lib/utils";
 import type { CategorySummary } from "@/lib/api";
 import { CategoryForm } from "./category-form";
@@ -42,28 +41,24 @@ export function CategoryList({
   const [deletingCategory, setDeletingCategory] = useState<CategorySummary | null>(null);
   
   const updateMutation = useMutation({
-    mutationFn: (data: any) => api.categories.update(budgetId, editingCategory!.id, data),
+    mutationFn: (data: any) => withToast.categories.update(budgetId, editingCategory!.id, data),
     onSuccess: () => {
-      toast.success(t('category.categoryUpdated'));
       setEditingCategory(null);
       onCategoryUpdate?.();
     },
-    onError: (error) => {
-      console.error("Failed to update category:", error);
-      toast.error(t('common.error'));
+    onError: () => {
+      // Error toast is handled by withToast
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => api.categories.delete(budgetId, deletingCategory!.id),
+    mutationFn: () => withToast.categories.delete(budgetId, deletingCategory!.id),
     onSuccess: () => {
-      toast.success(t('category.categoryDeleted'));
       setDeletingCategory(null);
       onCategoryUpdate?.();
     },
-    onError: (error) => {
-      console.error("Failed to delete category:", error);
-      toast.error(t('common.error'));
+    onError: () => {
+      // Error toast is handled by withToast
     },
   });
 

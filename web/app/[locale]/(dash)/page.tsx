@@ -31,13 +31,28 @@ export default function DashboardPage() {
     };
   }, []);
 
+  // Fetch monthly summary for accurate totals (not affected by pagination)
+  const monthlySummaryQuery = useQuery({
+    queryKey: ["monthly-summary", budgetId, thisMonth],
+    queryFn: () => {
+      if (!budgetId) return Promise.resolve([]);
+      return api.summary.monthly(budgetId, {
+        from: thisMonth.from,
+        to: thisMonth.to
+      });
+    },
+    enabled: Boolean(budgetId)
+  });
+
+  // Fetch entries for recent activity and category breakdown (with high limit to get all)
   const entriesQuery = useQuery({
     queryKey: ["entries", budgetId, thisMonth],
     queryFn: () => {
       if (!budgetId) return Promise.resolve([]);
       return api.entries.list(budgetId, {
         from: thisMonth.from,
-        to: thisMonth.to
+        to: thisMonth.to,
+        perPage: 1000 // High limit to get all entries for the month
       });
     },
     enabled: Boolean(budgetId)
@@ -55,9 +70,18 @@ export default function DashboardPage() {
   const selectedBudgetData = budgetsQuery.data?.find((b) => b.id === budgetId);
   const entries = entriesQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
+  const monthlySummaryData = monthlySummaryQuery.data?.[0]; // Get first (and only) month
 
-  // Calculate this month's summary
+  // Use monthly summary for accurate totals (not affected by pagination)
   const monthSummary = useMemo(() => {
+    if (monthlySummaryData) {
+      return {
+        income: monthlySummaryData.income,
+        expense: monthlySummaryData.expense,
+        net: monthlySummaryData.net
+      };
+    }
+    // Fallback to calculating from entries if summary not available
     const income = entries
       .filter((e) => e.kind === "income")
       .reduce((sum, e) => sum + e.amount_minor, 0) / 100;
@@ -65,7 +89,7 @@ export default function DashboardPage() {
       .filter((e) => e.kind === "expense")
       .reduce((sum, e) => sum + e.amount_minor, 0) / 100;
     return { income, expense, net: income - expense };
-  }, [entries]);
+  }, [monthlySummaryData, entries]);
 
   // Get recent entries (last 5)
   const recentEntries = useMemo(() => {

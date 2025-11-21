@@ -14,12 +14,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { authStore } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { toast } from "sonner";
+import { useToast } from "@/lib/toast";
 
 export default function SettingsPage() {
   const t = useTranslations();
   const router = useRouter();
   const { user, clearAuth } = authStore();
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) {
@@ -38,6 +39,23 @@ export default function SettingsPage() {
     sessionStorage.removeItem("philand-auth");
     clearAuth();
     toast.success(t('settings.tokensPurged'));
+  };
+
+  const handleToastDemo = (type: 'success' | 'error' | 'warning' | 'info') => {
+    switch (type) {
+      case 'success':
+        toast.success("Operation completed!", { description: "Your changes have been saved successfully with beautiful gradients." });
+        break;
+      case 'error':
+        toast.error("Something went wrong!", { description: "Please check your input and try again. Error styling adapts to your theme." });
+        break;
+      case 'warning':
+        toast.warning("Please be careful!", { description: "This action might have consequences. Warning colors are friendly yet noticeable." });
+        break;
+      case 'info':
+        toast.info("Here's some information!", { description: "Info toasts provide helpful context with pleasant blue gradients." });
+        break;
+    }
   };
 
   return (
@@ -146,6 +164,56 @@ export default function SettingsPage() {
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-xs text-muted-foreground">
                 {t('settings.securityNote')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Toast Demo */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Toast Demo - Improved Colors
+            </CardTitle>
+            <CardDescription>
+              Test the new friendly, theme-aware toast notifications with beautiful gradients
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => handleToastDemo('success')}
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 transition-all duration-200"
+              >
+                ✅ Success
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleToastDemo('error')}
+                className="bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 transition-all duration-200"
+              >
+                ❌ Error
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleToastDemo('warning')}
+                className="bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200 transition-all duration-200"
+              >
+                ⚠️ Warning
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleToastDemo('info')}
+                className="bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200 transition-all duration-200"
+              >
+                ℹ️ Info
+              </Button>
+            </div>
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                💡 Switch between Light, Dark, and Colorful themes to see how toast colors adapt beautifully to each theme!
               </p>
             </div>
           </CardContent>

@@ -2,6 +2,7 @@
 
 import { Moon, Sun, Sparkles, Check } from "lucide-react";
 import { useTheme } from "@/lib/theme-provider";
+import { useToast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ const themes = [
 
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
+  const toast = useToast();
 
   const currentTheme = themes.find(t => t.value === theme) || themes[0];
   const Icon = currentTheme.icon;
@@ -60,7 +62,12 @@ export function ThemeSelector() {
           return (
             <DropdownMenuItem
               key={themeOption.value}
-              onClick={() => setTheme(themeOption.value)}
+              onClick={() => {
+                setTheme(themeOption.value);
+                toast.success(`Theme changed to ${themeOption.label}`, {
+                  description: themeOption.description
+                });
+              }}
               className="flex items-center gap-3 cursor-pointer"
             >
               <div className={`h-8 w-8 rounded-md ${themeOption.preview} flex items-center justify-center`}>
