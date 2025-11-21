@@ -43,12 +43,14 @@ impl CategoryRepo {
         
         // Use current values as defaults for fields not being updated
         let name = req.name.as_ref().unwrap_or(&current.name);
+        let kind = req.kind.as_ref().unwrap_or(&current.kind);
         let is_hidden = req.is_hidden.unwrap_or(current.is_hidden);
         let color = req.color.as_ref().or(current.color.as_ref());
         let icon = req.icon.as_ref().or(current.icon.as_ref());
         
-        sqlx::query("UPDATE categories SET name = ?, is_hidden = ?, color = ?, icon = ?, updated_at = ? WHERE id = ? AND budget_id = ?")
+        sqlx::query("UPDATE categories SET name = ?, kind = ?, is_hidden = ?, color = ?, icon = ?, updated_at = ? WHERE id = ? AND budget_id = ?")
             .bind(name)
+            .bind(kind)
             .bind(is_hidden)
             .bind(color)
             .bind(icon)

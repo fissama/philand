@@ -27,18 +27,42 @@ impl CategoryService {
             }
         }
         
+        // If changing category kind, check if it has any active entries
+        if let Some(new_kind) = &req.kind {
+            // Get current category to check if kind is actually changing
+            let current = CategoryRepo::get_by_id(pool, budget_id, category_id).await?;
+            
+            if &current.kind != new_kind {
+                // Check if category has any active entries
+                let entry_count = sqlx::query_scalar::<_, i64>(
+                    "SELECT COUNT(*) FROM entries WHERE category_id = ? AND deleted_at IS NULL"
+                )
+                    .bind(category_id)
+                    .fetch_one(pool)
+                    .await?;
+                    
+                if entry_count > 0 {
+                    return Err(AppError::BadRequest(
+                        format!("Cannot change category type. It has {} active entries. Please delete or move the entries first.", entry_count)
+                    ));
+                }
+            }
+        }
+        
         CategoryRepo::update(pool, budget_id, category_id, req).await
     }
     
     pub async fn delete(pool: &DbPool, budget_id: &str, category_id: &str) -> Result<(), AppError> {
-        // Check if category is being used by any entries
-        let entry_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM entries WHERE category_id = ?")
+        // Check if category is being used by any active (non-deleted) entries
+        let entry_count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM entries WHERE category_id = ? AND deleted_at IS NULL"
+        )
             .bind(category_id)
             .fetch_one(pool)
             .await?;
             
         if entry_count > 0 {
-            return Err(AppError::BadRequest(format!("Cannot delete category. It is used by {} entries.", entry_count)));
+            return Err(AppError::BadRequest(format!("Cannot delete category. It is used by {} active entries.", entry_count)));
         }
         
         CategoryRepo::delete(pool, budget_id, category_id).await
