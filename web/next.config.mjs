@@ -11,6 +11,15 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: undefined,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 's3.tebi.io',
+        pathname: '/philand/**',
+      },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

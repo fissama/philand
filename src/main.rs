@@ -48,6 +48,10 @@ async fn main() -> anyhow::Result<()> {
     let pool = database::database::create_pool(&db_url).await?;
     //sqlx::migrate!("./migrations").run(&pool).await?;
     
+    // Initialize S3 client for avatar storage
+    utils::s3_storage::init_s3_client().await?;
+    info!("S3 storage initialized");
+    
     // Initialize rate limiter
     let rate_limit_cfg = get_config().get_rate_limit_config();
     let rate_limiter = Arc::new(RateLimiter::new(

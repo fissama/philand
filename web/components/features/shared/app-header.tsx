@@ -68,6 +68,7 @@ export function AppHeader() {
               <Avatar className="h-9 w-9">
                 {user?.avatar && (
                   <AvatarImage 
+                    key={user.avatar}
                     src={user.avatar} 
                     alt={user.name}
                     loading="lazy"

@@ -44,16 +44,16 @@ export default function SettingsPage() {
   const handleToastDemo = (type: 'success' | 'error' | 'warning' | 'info') => {
     switch (type) {
       case 'success':
-        toast.success("Operation completed!", { description: "Your changes have been saved successfully with beautiful gradients." });
+        toast.success(t('settings.toastSuccess'), { description: t('settings.toastSuccessDesc') });
         break;
       case 'error':
-        toast.error("Something went wrong!", { description: "Please check your input and try again. Error styling adapts to your theme." });
+        toast.error(t('settings.toastError'), { description: t('settings.toastErrorDesc') });
         break;
       case 'warning':
-        toast.warning("Please be careful!", { description: "This action might have consequences. Warning colors are friendly yet noticeable." });
+        toast.warning(t('settings.toastWarning'), { description: t('settings.toastWarningDesc') });
         break;
       case 'info':
-        toast.info("Here's some information!", { description: "Info toasts provide helpful context with pleasant blue gradients." });
+        toast.info(t('settings.toastInfo'), { description: t('settings.toastInfoDesc') });
         break;
     }
   };
@@ -174,10 +174,10 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
-              Toast Demo - Improved Colors
+              {t('settings.toastDemoTitle')}
             </CardTitle>
             <CardDescription>
-              Test the new friendly, theme-aware toast notifications with beautiful gradients
+              {t('settings.toastDemoDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,14 +187,14 @@ export default function SettingsPage() {
                 onClick={() => handleToastDemo('success')}
                 className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 transition-all duration-200"
               >
-                ✅ Success
+                ✅ {t('common.success')}
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleToastDemo('error')}
                 className="bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 transition-all duration-200"
               >
-                ❌ Error
+                ❌ {t('common.error')}
               </Button>
               <Button 
                 variant="outline" 
@@ -213,7 +213,7 @@ export default function SettingsPage() {
             </div>
             <div className="mt-4 p-3 bg-muted/50 rounded-lg">
               <p className="text-xs text-muted-foreground">
-                💡 Switch between Light, Dark, and Colorful themes to see how toast colors adapt beautifully to each theme!
+                {t('settings.toastDemoNote')}
               </p>
             </div>
           </CardContent>
