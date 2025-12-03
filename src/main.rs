@@ -48,6 +48,10 @@ async fn main() -> anyhow::Result<()> {
     let pool = database::database::create_pool(&db_url).await?;
     //sqlx::migrate!("./migrations").run(&pool).await?;
     
+    // Initialize S3 client for avatar storage
+    utils::s3_storage::init_s3_client().await?;
+    info!("S3 storage initialized");
+    
     // Initialize rate limiter
     let rate_limit_cfg = get_config().get_rate_limit_config();
     let rate_limiter = Arc::new(RateLimiter::new(
@@ -60,8 +64,26 @@ async fn main() -> anyhow::Result<()> {
     ));
     
     let state = Arc::new(handler::AppState { 
-        pool,
+        pool: pool.clone(),
         rate_limiter: rate_limiter.clone(),
+    });
+    
+    // Start cleanup cron job (runs every 24 hours)
+    let cleanup_pool = pool.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(24 * 60 * 60)); // 24 hours
+        loop {
+            interval.tick().await;
+            info!("Running cleanup job for soft-deleted records...");
+            match utils::cleanup::CleanupService::cleanup_daily(&cleanup_pool).await {
+                Ok(stats) => {
+                    info!("{}", stats);
+                }
+                Err(e) => {
+                    tracing::error!("Cleanup job failed: {}", e);
+                }
+            }
+        }
     });
 
     let cors_layer = {
@@ -101,6 +123,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))
         .route("/api/budgets/{id}/members", get(handler::members::list).post(handler::members::upsert))
         .route("/api/budgets/{id}/members/{user_id}", patch(handler::members::update).delete(handler::members::delete))
+        .route("/api/admin/cleanup", post(handler::cleanup::manual_cleanup))
         .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 
     // Auth routes with rate limiting

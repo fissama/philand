@@ -199,3 +199,100 @@ body {
 .colorful ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, hsl(var(--cat-blue)), hsl(var(--cat-yellow)));
 }
+
+/* Theme-aware toast styles */
+.colorful-toast {
+  animation: colorful-toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+}
+
+@keyframes colorful-toast-in {
+  from {
+    transform: translateY(-100%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Enhanced toast styling for all themes */
+[data-sonner-toast] {
+  font-weight: 500 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-sonner-toast][data-type="error"] {
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  color: white !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  color: white !important;
+}
+
+/* Toast title and description styling */
+[data-sonner-toast] [data-title] {
+  font-weight: 600 !important;
+  margin-bottom: 2px;
+}
+
+[data-sonner-toast] [data-description] {
+  opacity: 0.9 !important;
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+
+/* Close button styling */
+[data-sonner-toast] [data-close-button] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.1);
+}
+
+/* Dark theme specific adjustments */
+.dark [data-sonner-toast]:not([data-type]) {
+  background: hsl(220 13% 18%) !important;
+  color: hsl(220 9% 86%) !important;
+  border: 1px solid hsl(220 13% 28%) !important;
+}
+
+.dark [data-sonner-toast]:not([data-type]) [data-close-button] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: hsl(220 9% 86%) !important;
+}
+
+/* Light theme specific adjustments */
+.light [data-sonner-toast]:not([data-type]) {
+  background: hsl(0 0% 100%) !important;
+  color: hsl(220 9% 15%) !important;
+  border: 1px solid hsl(220 13% 91%) !important;
+}
+
+.light [data-sonner-toast]:not([data-type]) [data-close-button] {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: hsl(220 9% 15%) !important;
+}

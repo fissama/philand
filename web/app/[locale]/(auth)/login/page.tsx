@@ -12,9 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { AuthLogo } from "@/components/features/auth/auth-logo";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
-import { api } from "@/lib/api";
+import { withToast } from "@/lib/api-with-toast";
 import { authStore } from "@/lib/auth";
-import { toast } from "sonner";
 
 const schema = z.object({
   email: z.string().email(),
@@ -33,14 +32,13 @@ export default function LoginPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: api.login,
+    mutationFn: withToast.login,
     onSuccess: (data) => {
       setAuth(data);
-      toast.success(t('dashboard.welcome'), { description: t('auth.loginSuccess') });
       router.push("/");
     },
-    onError: (error: unknown) => {
-      toast.error(t('common.error'), { description: error instanceof Error ? error.message : t('auth.invalidCredentials') });
+    onError: () => {
+      // Error toast is handled by withToast.login
     }
   });
 

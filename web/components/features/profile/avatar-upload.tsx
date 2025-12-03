@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Camera, Trash2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -25,18 +25,26 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentAvatar || null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Sync preview with currentAvatar prop when it changes
+  useEffect(() => {
+    setPreview(currentAvatar || null);
+  }, [currentAvatar]);
+
   const uploadMutation = useMutation({
     mutationFn: (avatar: string) => api.profile.uploadAvatar({ avatar }),
     onSuccess: (data) => {
       toast.success(t('profile.avatarUploaded'));
-      setPreview(data.avatar_url);
+      // Add cache-busting timestamp to force image reload
+      const avatarUrlWithTimestamp = `${data.avatar_url}?t=${Date.now()}`;
+      // Update preview with S3 URL from server
+      setPreview(avatarUrlWithTimestamp);
       // Update auth store immediately for header to reflect change
-      authStore.getState().updateUser({ avatar: data.avatar_url });
+      authStore.getState().updateUser({ avatar: avatarUrlWithTimestamp });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: unknown) => {
       toast.error(t('common.error'), {
-        description: error instanceof Error ? error.message : 'Failed to upload avatar'
+        description: error instanceof Error ? error.message : t('profile.failedToUpload')
       });
     }
   });
@@ -44,7 +52,7 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
   const deleteMutation = useMutation({
     mutationFn: () => api.profile.deleteAvatar(),
     onSuccess: () => {
-      toast.success('Avatar removed');
+      toast.success(t('profile.avatarRemoved'));
       setPreview(null);
       // Update auth store immediately for header to reflect change
       authStore.getState().updateUser({ avatar: undefined });
@@ -52,7 +60,7 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
     },
     onError: (error: unknown) => {
       toast.error(t('common.error'), {
-        description: error instanceof Error ? error.message : 'Failed to remove avatar'
+        description: error instanceof Error ? error.message : t('profile.failedToRemove')
       });
     }
   });
@@ -77,15 +85,13 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
       // Check compressed size (should be < 100KB)
       const sizeKB = Math.round((compressed.length * 3) / 4 / 1024);
       if (sizeKB > 100) {
-        toast.warning(`Compressed to ${sizeKB}KB. Uploading...`);
+        toast.warning(t('profile.compressing', { size: sizeKB }));
       }
       
-      setPreview(compressed);
-      
-      // Upload to server
+      // Upload to server (preview will be set to S3 URL on success)
       uploadMutation.mutate(compressed);
     } catch (error) {
-      toast.error('Failed to process image');
+      toast.error(t('profile.failedToProcess'));
       console.error(error);
     } finally {
       setIsProcessing(false);
@@ -109,7 +115,7 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
       <CardHeader>
         <CardTitle>{t('profile.avatar')}</CardTitle>
         <CardDescription>
-          Upload a profile picture (max 5MB)
+          {t('profile.uploadDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -118,7 +124,11 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
           <div className="relative">
             <Avatar className="h-32 w-32 border-4 border-border">
               {preview ? (
-                <AvatarImage src={preview} alt="Profile" />
+                <AvatarImage 
+                  key={preview} 
+                  src={preview} 
+                  alt={t('profile.altProfile')} 
+                />
               ) : (
                 <AvatarFallback className="text-4xl">
                   {getInitials(userName)}
@@ -158,7 +168,7 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
               {isProcessing ? (
                 <>
                   <Upload className="h-4 w-4 animate-spin" />
-                  Processing...
+                  {t('profile.processing')}
                 </>
               ) : (
                 <>
@@ -169,7 +179,7 @@ export function AvatarUpload({ currentAvatar, userName }: AvatarUploadProps) {
             </Button>
 
             <p className="text-xs text-muted-foreground">
-              Recommended: Square image, at least 200x200px
+              {t('profile.recommendedSize')}
             </p>
           </div>
         </div>

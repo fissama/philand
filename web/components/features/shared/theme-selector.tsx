@@ -2,6 +2,8 @@
 
 import { Moon, Sun, Sparkles, Check } from "lucide-react";
 import { useTheme } from "@/lib/theme-provider";
+import { useToast } from "@/lib/toast";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,25 +15,25 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
-const themes = [
+const themeOptions = [
   {
     value: "light" as const,
-    label: "Light",
-    description: "Clean & minimal",
+    labelKey: "settings.themeLight",
+    descriptionKey: "settings.themeLightDesc",
     icon: Sun,
     preview: "bg-white border-2 border-gray-200"
   },
   {
     value: "dark" as const,
-    label: "Dark",
-    description: "Easy on the eyes",
+    labelKey: "settings.themeDark",
+    descriptionKey: "settings.themeDarkDesc",
     icon: Moon,
     preview: "bg-gray-900 border-2 border-gray-700"
   },
   {
     value: "colorful" as const,
-    label: "Colorful",
-    description: "Fun & playful 🐱",
+    labelKey: "settings.themeColorful",
+    descriptionKey: "settings.themeColorfulDesc",
     icon: Sparkles,
     preview: "bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200"
   }
@@ -39,8 +41,10 @@ const themes = [
 
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
+  const toast = useToast();
+  const t = useTranslations();
 
-  const currentTheme = themes.find(t => t.value === theme) || themes[0];
+  const currentTheme = themeOptions.find(t => t.value === theme) || themeOptions[0];
   const Icon = currentTheme.icon;
 
   return (
@@ -51,16 +55,23 @@ export function ThemeSelector() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('settings.chooseThemeLabel')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {themes.map((themeOption) => {
+        {themeOptions.map((themeOption) => {
           const ThemeIcon = themeOption.icon;
           const isActive = theme === themeOption.value;
+          const label = t(themeOption.labelKey as any);
+          const description = t(themeOption.descriptionKey as any);
           
           return (
             <DropdownMenuItem
               key={themeOption.value}
-              onClick={() => setTheme(themeOption.value)}
+              onClick={() => {
+                setTheme(themeOption.value);
+                toast.success(t('settings.themeChanged', { theme: label }), {
+                  description
+                });
+              }}
               className="flex items-center gap-3 cursor-pointer"
             >
               <div className={`h-8 w-8 rounded-md ${themeOption.preview} flex items-center justify-center`}>
@@ -68,11 +79,11 @@ export function ThemeSelector() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{themeOption.label}</span>
+                  <span className="font-medium">{label}</span>
                   {isActive && <Check className="h-4 w-4 text-primary" />}
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {themeOption.description}
+                  {description}
                 </span>
               </div>
             </DropdownMenuItem>
