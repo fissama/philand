@@ -40,6 +40,9 @@ impl BudgetService {
         if let Some(currency_code) = req.currency_code {
             budget.currency_code = currency_code;
         }
+        if let Some(budget_type) = req.budget_type {
+            budget.budget_type = budget_type;
+        }
         if let Some(archived) = req.archived {
             budget.archived = archived;
         }

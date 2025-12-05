@@ -1,4 +1,4 @@
-use crate::manager::{models::budget::{Budget, BudgetWithRole, CreateBudgetReq}};
+use crate::manager::{models::budget::{Budget, BudgetWithRole, CreateBudgetReq, BudgetType}};
 use crate::utils::{database::database::DbPool, error::error::AppError};
 use sqlx::Row;
 pub struct BudgetRepo;
@@ -57,7 +57,7 @@ impl BudgetRepo {
     
     pub async fn list_with_roles_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<BudgetWithRole>, AppError> {
         let mut sql = String::from(
-            "SELECT b.id, b.owner_id, b.name, b.currency_code, b.description, b.archived, 
+            "SELECT b.id, b.owner_id, b.name, b.currency_code, b.budget_type, b.description, b.archived, 
                     b.created_at, b.updated_at, bm.role as user_role
              FROM budgets b 
              INNER JOIN budget_members bm ON b.id = bm.budget_id 
@@ -83,11 +83,15 @@ impl BudgetRepo {
         let results = query_builder.fetch_all(pool).await?;
         
         let budgets = results.into_iter().map(|row| {
+            let budget_type_str: String = row.get("budget_type");
+            let budget_type = budget_type_str.parse::<BudgetType>().unwrap_or(BudgetType::Standard);
+            
             BudgetWithRole {
                 id: row.get("id"),
                 owner_id: row.get("owner_id"),
                 name: row.get("name"),
                 currency_code: row.get("currency_code"),
+                budget_type,
                 description: row.get("description"),
                 archived: row.get("archived"),
                 created_at: row.get("created_at"),
@@ -106,18 +110,20 @@ impl BudgetRepo {
     pub async fn create(pool: &DbPool, req: CreateBudgetReq) -> Result<Budget, AppError> {
         let id = uuid::Uuid::new_v4().to_string();
         let currency = req.currency_code.unwrap_or_else(|| "USD".to_string());
-        sqlx::query("INSERT INTO budgets (id, owner_id, name, currency_code, description) VALUES (?, ?, ?, ?, ?)")
-            .bind(&id).bind(&req.owner_id).bind(&req.name).bind(&currency).bind(&req.description).execute(pool).await?;
+        let budget_type = req.budget_type.unwrap_or(BudgetType::Standard);
+        sqlx::query("INSERT INTO budgets (id, owner_id, name, currency_code, budget_type, description) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind(&id).bind(&req.owner_id).bind(&req.name).bind(&currency).bind(budget_type.to_string()).bind(&req.description).execute(pool).await?;
         sqlx::query("INSERT INTO budget_members (budget_id, user_id, role) VALUES (?, ?, 'owner')")
             .bind(&id).bind(&req.owner_id).execute(pool).await?;
         Self::get(pool, &id).await
     }
     
     pub async fn update(pool: &DbPool, budget: &Budget) -> Result<Budget, AppError> {
-        sqlx::query("UPDATE budgets SET name = ?, description = ?, currency_code = ?, archived = ?, updated_at = ? WHERE id = ?")
+        sqlx::query("UPDATE budgets SET name = ?, description = ?, currency_code = ?, budget_type = ?, archived = ?, updated_at = ? WHERE id = ?")
             .bind(&budget.name)
             .bind(&budget.description)
             .bind(&budget.currency_code)
+            .bind(budget.budget_type.to_string())
             .bind(budget.archived)
             .bind(budget.updated_at)
             .bind(&budget.id)

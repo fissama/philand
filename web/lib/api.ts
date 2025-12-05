@@ -111,10 +111,10 @@ export const api = {
       const params = query ? `?query=${encodeURIComponent(query)}` : "";
       return request<BudgetSummary[]>(`/api/budgets${params}`);
     },
-    create: (input: { name: string; currency: string }) =>
+    create: (input: { name: string; currency: string; budget_type?: BudgetType }) =>
       request<BudgetSummary>("/api/budgets", { 
         method: "POST", 
-        body: { name: input.name, currency_code: input.currency } 
+        body: { name: input.name, currency_code: input.currency, budget_type: input.budget_type } 
       }),
     detail: (id: string) => request<BudgetDetail>(`/api/budgets/${id}`),
     balance: (id: string) => request<BudgetBalance>(`/api/budgets/${id}/balance`),
@@ -295,10 +295,13 @@ export interface AvatarResponse {
 
 export type Role = "owner" | "manager" | "contributor" | "viewer";
 
+export type BudgetType = "standard" | "saving" | "debt" | "invest" | "sharing";
+
 export interface BudgetSummary {
   id: string;
   name: string;
   currency_code: string;
+  budget_type: BudgetType;
   owner_id: string;
   description?: string;
   archived: boolean;
@@ -324,6 +327,7 @@ export interface UpdateBudgetReq {
   name?: string;
   description?: string;
   currency_code?: string;
+  budget_type?: BudgetType;
   archived?: boolean;
 }
 

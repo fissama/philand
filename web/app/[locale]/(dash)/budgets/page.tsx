@@ -12,16 +12,20 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { BudgetCard } from "@/components/features/budgets/budget-card";
 import { GlobalQuickAddEntry } from "@/components/features/entries/global-quick-add-entry";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
+import { budgetTypes } from "@/lib/budget-types";
 import { toast } from "sonner";
 
 const budgetSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  currency: z.string().min(1, "Currency is required")
+  currency: z.string().min(1, "Currency is required"),
+  budget_type: z.enum(["standard", "saving", "debt", "invest", "sharing"]).optional(),
 });
 
 type BudgetFormValues = z.infer<typeof budgetSchema>;
@@ -40,7 +44,7 @@ export default function BudgetsPage() {
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
-    defaultValues: { name: "", currency: "USD" }
+    defaultValues: { name: "", currency: "USD", budget_type: "standard" }
   });
 
   const mutation = useMutation({
@@ -121,49 +125,116 @@ export default function BudgetsPage() {
         </CardContent>
       </Card>
 
-      {showForm ? (
-        <Card className="max-w-xl">
-          <CardHeader>
-            <CardTitle>Create budget</CardTitle>
-            <CardDescription>Set up a new envelope for your team.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('budget.createBudget')}</DialogTitle>
+            <DialogDescription>
+              {t('budget.budgetDetails')}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('budget.name')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Marketing Q3" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="budget_type"
+                render={({ field }) => {
+                  const selectedType = budgetTypes.find(t => t.value === field.value);
+                  const SelectedIcon = selectedType?.icon;
+                  
+                  return (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Marketing Q3" {...field} />
-                      </FormControl>
+                      <FormLabel>{t('budget.type')}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-auto">
+                            <SelectValue>
+                              {selectedType && (
+                                <div className="flex items-center gap-3 py-1">
+                                  <div className={`rounded-lg p-2 ${selectedType.bgColor} ${selectedType.borderColor} border`}>
+                                    {SelectedIcon && <SelectedIcon className={`h-5 w-5 ${selectedType.color}`} />}
+                                  </div>
+                                  <div className="flex flex-col items-start">
+                                    <span className="font-semibold">{t(selectedType.labelKey as any)}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {t(selectedType.descriptionKey as any)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {budgetTypes.map((type) => {
+                            const TypeIcon = type.icon;
+                            return (
+                              <SelectItem key={type.value} value={type.value} className="cursor-pointer">
+                                <div className="flex items-center gap-3 py-2">
+                                  <div className={`rounded-lg p-2 ${type.bgColor} ${type.borderColor} border`}>
+                                    <TypeIcon className={`h-5 w-5 ${type.color}`} />
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold">{t(type.labelKey as any)}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {t(type.descriptionKey as any)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="currency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Currency</FormLabel>
-                      <FormControl>
-                        <Input placeholder="USD" maxLength={3} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                  {mutation.isPending ? "Creating..." : "Create budget"}
+                  );
+                }}
+              />
+              
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('budget.currency')}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="USD" maxLength={3} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" disabled={mutation.isPending}>
+                  {mutation.isPending ? t('common.loading') : t('budget.createBudget')}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      ) : null}
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowForm(false)}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {budgetsQuery.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

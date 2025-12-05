@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
+import { getBudgetTypeInfo } from "@/lib/budget-types";
 
 type PeriodFilter = "thisWeek" | "thisMonth" | "lastMonth";
 
@@ -60,6 +61,9 @@ export default function BudgetOverviewPage() {
   const budget = budgetQuery.data;
   const categories = categoriesQuery.data ?? [];
   const entries = entriesQuery.data ?? [];
+  
+  const budgetTypeInfo = budget ? getBudgetTypeInfo(budget.budget_type) : null;
+  const TypeIcon = budgetTypeInfo?.icon;
   
   const createdDate = budget ? new Date(budget.created_at).toLocaleDateString(undefined, {
     year: "numeric",
@@ -120,6 +124,26 @@ export default function BudgetOverviewPage() {
               <p className="text-muted-foreground">{t('budget.name')}</p>
               <p className="font-semibold text-base">{budget.name}</p>
             </div>
+            
+            {budgetTypeInfo && TypeIcon && (
+              <div>
+                <p className="text-muted-foreground mb-2">{t('budget.type')}</p>
+                <div className={`inline-flex items-center gap-3 rounded-lg border-2 ${budgetTypeInfo.borderColor} ${budgetTypeInfo.bgColor} px-4 py-2.5`}>
+                  <div className={`rounded-lg p-2 bg-background/50`}>
+                    <TypeIcon className={`h-6 w-6 ${budgetTypeInfo.color}`} />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${budgetTypeInfo.color}`}>
+                      {t(budgetTypeInfo.labelKey as any)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(budgetTypeInfo.descriptionKey as any)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {budget.description && (
               <div>
                 <p className="text-muted-foreground">{t('budget.description')}</p>
