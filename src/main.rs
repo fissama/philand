@@ -130,6 +130,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/notifications/unread-count", get(handler::notifications::get_unread_count))
         .route("/api/notifications/mark-read", post(handler::notifications::mark_as_read))
         .route("/api/notifications/mark-all-read", post(handler::notifications::mark_all_as_read))
+        .route("/api/transfers", post(handler::transfers::create_transfer))
         .route("/api/admin/cleanup", post(handler::cleanup::manual_cleanup))
         .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 

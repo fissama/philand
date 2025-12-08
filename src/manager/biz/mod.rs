@@ -8,3 +8,4 @@ pub mod password_reset;
 pub mod profile;
 pub mod google_auth;
 pub mod comments;
+pub mod transfers;

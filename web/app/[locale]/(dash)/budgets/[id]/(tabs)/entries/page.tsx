@@ -20,6 +20,7 @@ import { EntryTable } from "@/components/features/entries/entry-table";
 import { EntryForm } from "@/components/features/entries/entry-form";
 import { DateRangePicker } from "@/components/features/forms/date-range-picker";
 import { EntryDetailsDialog } from "@/components/features/entries/entry-details-dialog";
+import { TransferDialog } from "@/components/features/transfers/transfer-dialog";
 import type { Entry } from "@/lib/api";
 import type { BudgetMember } from "@/lib/comment-types";
 import { MoneyInput } from "@/components/features/forms/money-input";
@@ -294,29 +295,44 @@ export default function BudgetEntriesPage() {
             {entriesQuery.data?.length ?? 0} {entriesQuery.data?.length === 1 ? t('overview.entry') : t('entry.entries').toLowerCase()}
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 h-12 sm:h-10 text-base sm:text-sm font-medium w-full sm:w-auto">
-              <PlusCircle className="h-5 w-5 sm:h-4 sm:w-4" />
-              {t('entry.addEntry')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader className="sr-only">
-              <DialogTitle>{t('entry.addEntry')}</DialogTitle>
-              <DialogDescription>{t('entry.recordTransaction')}</DialogDescription>
-            </DialogHeader>
-            <EntryForm
-              budgetId={params.id}
-              onSubmit={handleFormSubmit}
-              onCancel={() => setDialogOpen(false)}
-              isLoading={mutation.isPending}
-              title={t('entry.addEntry')}
-              description={t('entry.recordTransaction')}
-              categories={categories}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <TransferDialog 
+            currentBudgetId={params.id}
+            trigger={
+              <Button variant="outline" className="gap-2 h-12 sm:h-10 text-base sm:text-sm font-medium w-full sm:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10v5"/>
+                  <path d="M7 7v10"/>
+                  <path d="m7 17 10-10"/>
+                </svg>
+                Transfer
+              </Button>
+            }
+          />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 h-12 sm:h-10 text-base sm:text-sm font-medium w-full sm:w-auto">
+                <PlusCircle className="h-5 w-5 sm:h-4 sm:w-4" />
+                {t('entry.addEntry')}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto p-4 sm:p-6">
+              <DialogHeader className="sr-only">
+                <DialogTitle>{t('entry.addEntry')}</DialogTitle>
+                <DialogDescription>{t('entry.recordTransaction')}</DialogDescription>
+              </DialogHeader>
+              <EntryForm
+                budgetId={params.id}
+                onSubmit={handleFormSubmit}
+                onCancel={() => setDialogOpen(false)}
+                isLoading={mutation.isPending}
+                title={t('entry.addEntry')}
+                description={t('entry.recordTransaction')}
+                categories={categories}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Card>

@@ -268,6 +268,41 @@ export const api = {
       request<Member>(`/api/budgets/${budgetId}/members/${memberId}`, { method: "PATCH", body: input }),
     remove: (budgetId: string, memberId: string) =>
       request<Response>(`/api/budgets/${budgetId}/members/${memberId}`, { method: "DELETE", raw: true })
+  },
+  transfers: {
+    create: (input: {
+      from_budget_id: string;
+      to_budget_id: string;
+      amount: number;
+      transfer_date: string;
+      currency_code: string;
+      note?: string;
+      from_category_id: string;
+      to_category_id: string;
+    }) =>
+      request<{
+        transfer: {
+          id: string;
+          from_budget_id: string;
+          to_budget_id: string;
+          amount_minor: number;
+          currency_code: string;
+          transfer_date: string;
+          note: string | null;
+          created_by: string;
+          created_at: string;
+        };
+        from_entry_id: string;
+        to_entry_id: string;
+        from_budget_name: string;
+        to_budget_name: string;
+      }>('/api/transfers', {
+        method: 'POST',
+        body: {
+          ...input,
+          amount_minor: Math.round(input.amount * 100)
+        }
+      })
   }
 };
 
