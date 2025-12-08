@@ -7,10 +7,11 @@ where
 {
     match avatar {
         Some(data) if !data.is_empty() => {
-            // Add data URL prefix if not present
-            if data.starts_with("data:image") {
+            // Return as-is if it's already a data URL or HTTP(S) URL
+            if data.starts_with("data:image") || data.starts_with("http://") || data.starts_with("https://") {
                 serializer.serialize_some(data)
             } else {
+                // Legacy: wrap raw base64 with data URL prefix
                 serializer.serialize_some(&format!("data:image/webp;base64,{}", data))
             }
         }

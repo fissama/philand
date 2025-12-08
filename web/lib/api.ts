@@ -1,7 +1,6 @@
 "use client";
 
-import { toast } from "sonner";
-
+import { getThemeAwareToast } from "@/lib/toast";
 import { authStore } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -37,10 +36,11 @@ async function request<TResponse, TBody = unknown>(
     },
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include"
-  });
+  }); 
 
   if (response.status === 401 || response.status === 403) {
     state.clearAuth();
+    const toast = getThemeAwareToast();
     toast.error("You have been signed out", {
       description: "Please log in again to continue."
     });

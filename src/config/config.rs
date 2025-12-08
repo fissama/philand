@@ -10,6 +10,7 @@ pub struct Config {
     rate_limit_cfg: RateLimitConfig,
     reset_cfg: ResetConfig,
     google_cfg: GoogleConfig,
+    s3_cfg: S3Config,
 }
 
 impl Config {
@@ -39,6 +40,10 @@ impl Config {
 
     pub fn get_google_cfg(&self) -> GoogleConfig {
         self.google_cfg.clone()
+    }
+
+    pub fn get_s3_config(&self) -> S3Config {
+        self.s3_cfg.clone()
     }
 }
 
@@ -127,6 +132,42 @@ impl GoogleConfig {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct S3Config {
+    access_key: String,
+    secret_key: String,
+    bucket: String,
+    endpoint: String,
+    region: String,
+    public_url: String,
+}
+
+impl S3Config {
+    pub fn get_access_key(&self) -> String {
+        self.access_key.clone()
+    }
+
+    pub fn get_secret_key(&self) -> String {
+        self.secret_key.clone()
+    }
+
+    pub fn get_bucket(&self) -> String {
+        self.bucket.clone()
+    }
+
+    pub fn get_endpoint(&self) -> String {
+        self.endpoint.clone()
+    }
+
+    pub fn get_region(&self) -> String {
+        self.region.clone()
+    }
+
+    pub fn get_public_url(&self) -> String {
+        self.public_url.clone()
+    }
+}
+
 static mut GLOBAL_CONFIG: Option<Config> = None;
 
 pub fn init() {
@@ -162,6 +203,18 @@ pub fn init() {
                client_id: env::var("GOOGLE_CLIENT_ID").unwrap_or_else(|_| "your-google-client-id.apps.googleusercontent.com".to_string()),
                client_secret: env::var("GOOGLE_CLIENT_SECRET").unwrap_or_else(|_| "your-google-client-secret".to_string()),
                redirect_uri: env::var("GOOGLE_REDIRECT_URI").unwrap_or_else(|_| "http://localhost:3000/auth/google/callback".to_string()),
+            },
+            s3_cfg: S3Config {
+                access_key: env::var("S3_ACCESS_KEY").unwrap_or_else(|_| "".to_string()),
+                secret_key: env::var("S3_SECRET_KEY").unwrap_or_else(|_| "".to_string()),
+                bucket: env::var("S3_BUCKET").unwrap_or_else(|_| "philand-avatars".to_string()),
+                endpoint: env::var("S3_ENDPOINT").unwrap_or_else(|_| "https://s3.tebi.io".to_string()),
+                region: env::var("S3_REGION").unwrap_or_else(|_| "global".to_string()),
+                public_url: env::var("S3_PUBLIC_URL").unwrap_or_else(|_| {
+                    let bucket = env::var("S3_BUCKET").unwrap_or_else(|_| "philand-avatars".to_string());
+                    let endpoint = env::var("S3_ENDPOINT").unwrap_or_else(|_| "https://s3.tebi.io".to_string());
+                    format!("{}/{}", endpoint, bucket)
+                }),
             },
         });
     }

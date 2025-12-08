@@ -26,7 +26,8 @@ pub struct CreateCategoryReq {
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateCategoryReq { 
-    pub name: Option<String>, 
+    pub name: Option<String>,
+    pub kind: Option<String>, // Allow changing category type
     pub is_hidden: Option<bool>,
     pub color: Option<String>,
     pub icon: Option<String>,

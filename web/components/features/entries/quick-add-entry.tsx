@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useTranslations } from 'next-intl';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { api } from "@/lib/api";
+import { withToast, api } from "@/lib/api-with-toast";
 import { EntryForm } from "./entry-form";
 
 interface QuickAddEntryProps {
@@ -28,7 +27,7 @@ export function QuickAddEntry({ budgetId, trigger, className }: QuickAddEntryPro
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => api.entries.create(budgetId, {
+    mutationFn: (data: any) => withToast.entries.create(budgetId, {
       amount: Math.abs(data.amount),
       occurredOn: data.occurredOn,
       kind: data.kind,
@@ -38,12 +37,10 @@ export function QuickAddEntry({ budgetId, trigger, className }: QuickAddEntryPro
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["entries", budgetId] });
       queryClient.invalidateQueries({ queryKey: ["budget-balance", budgetId] });
-      toast.success(t('entry.addEntry'));
       setOpen(false);
     },
-    onError: (error) => {
-      console.error("Failed to create entry:", error);
-      toast.error(t('common.error'));
+    onError: () => {
+      // Error toast is handled by withToast.entries.create
     },
   });
 

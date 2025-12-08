@@ -7,8 +7,8 @@ use crate::utils::error::error::AppError;
 pub struct ImageProcessor;
 
 impl ImageProcessor {
-    /// Process avatar image: decode, resize, compress, and re-encode
-    pub fn process_avatar(base64_image: &str) -> Result<String, AppError> {
+    /// Process avatar image: decode, resize, compress, and return bytes
+    pub fn process_avatar(base64_image: &str) -> Result<Vec<u8>, AppError> {
         // Remove data URL prefix if present
         let base64_data = if base64_image.contains("base64,") {
             base64_image.split("base64,").nth(1).unwrap_or(base64_image)
@@ -48,7 +48,13 @@ impl ImageProcessor {
                 .map_err(|_| AppError::Internal)?;
         }
 
-        // Encode back to base64
+        Ok(buffer)
+    }
+    
+    /// Process avatar and return base64 (for backward compatibility)
+    #[allow(dead_code)]
+    pub fn process_avatar_base64(base64_image: &str) -> Result<String, AppError> {
+        let buffer = Self::process_avatar(base64_image)?;
         Ok(general_purpose::STANDARD.encode(&buffer))
     }
 

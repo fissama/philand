@@ -50,10 +50,11 @@ pub async fn upload_avatar(
     use crate::utils::image_processor::ImageProcessor;
     ImageProcessor::validate_size(&req.avatar)?;
     
-    let avatar_data = ProfileService::upload_avatar(&state.pool, &claims.sub, req.avatar).await?;
+    // Upload to S3 and get URL
+    let avatar_url = ProfileService::upload_avatar(&state.pool, &claims.sub, req.avatar).await?;
     
     Ok(Json(AvatarResponse {
-        avatar_url: format!("data:image/webp;base64,{}", avatar_data),
+        avatar_url, // Now returns S3 URL directly
         message: "Avatar uploaded successfully".to_string(),
     }))
 }
