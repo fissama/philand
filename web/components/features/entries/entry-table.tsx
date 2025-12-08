@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreVertical, Edit, Trash2, MessageSquare } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ interface EntryTableProps {
   budgetId?: string;
   onEntryUpdate?: () => void;
   canEdit?: boolean;
+  onEntryClick?: (entry: Entry) => void;
 }
 
 export function EntryTable({ 
@@ -45,7 +47,8 @@ export function EntryTable({
   currency,
   budgetId,
   onEntryUpdate,
-  canEdit = false
+  canEdit = false,
+  onEntryClick
 }: EntryTableProps) {
   const t = useTranslations();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
@@ -126,6 +129,9 @@ export function EntryTable({
                     <SortIcon field="amount" />
                   </div>
                 </th>
+                <th className="pb-3 text-center text-xs font-semibold uppercase text-muted-foreground w-16">
+                  <MessageSquare className="h-4 w-4 mx-auto" />
+                </th>
                 {canEdit && (
                   <th className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground w-12">
                     {t('common.actions')}
@@ -198,6 +204,24 @@ export function EntryTable({
                         {entry.kind === "income" ? "+" : "-"}
                         {formattedAmount}
                       </span>
+                    </td>
+                    <td className="py-3 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEntryClick?.(entry)}
+                        className="relative h-8 w-8 p-0"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        {(entry.comment_count || 0) > 0 && (
+                          <Badge
+                            variant="secondary"
+                            className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-[10px]"
+                          >
+                            {entry.comment_count}
+                          </Badge>
+                        )}
+                      </Button>
                     </td>
                     {canEdit && (
                       <td className="py-3 text-right">
@@ -314,8 +338,24 @@ export function EntryTable({
                           </>
                         )}
                       </div>
-                      {canEdit && (
-                        <div className="flex gap-1 shrink-0">
+                      <div className="flex gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEntryClick?.(entry)}
+                          className="relative h-9 w-9 p-0 hover:bg-muted"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          {(entry.comment_count || 0) > 0 && (
+                            <Badge
+                              variant="secondary"
+                              className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-[10px]"
+                            >
+                              {entry.comment_count}
+                            </Badge>
+                          )}
+                        </Button>
+                        {canEdit && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button 
@@ -344,8 +384,8 @@ export function EntryTable({
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

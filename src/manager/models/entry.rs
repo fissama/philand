@@ -22,6 +22,9 @@ pub struct Entry {
     pub member_name: String,
     pub member_email: String,
     pub member_avatar: Option<String>,
+    // Comment and attachment counts
+    pub comment_count: Option<i32>,
+    pub attachment_count: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]

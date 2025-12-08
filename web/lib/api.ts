@@ -19,6 +19,13 @@ interface ApiError extends Error {
   details?: unknown;
 }
 
+export async function apiRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: RequestOptions<TBody> = {}
+): Promise<TResponse> {
+  return request(path, options);
+}
+
 async function request<TResponse, TBody = unknown>(
   path: string,
   options: RequestOptions<TBody> = {}
@@ -362,6 +369,10 @@ export interface Entry {
   member_name: string;
   member_email: string;
   member_avatar?: string;
+  // Comments and attachments
+  comment_count?: number;
+  attachment_count?: number;
+  category_name?: string;
 }
 
 export interface EntryListResponse {

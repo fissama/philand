@@ -13,10 +13,14 @@ import { PlusCircle } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
 import { useBudgetPermissions } from "@/lib/useBudgetPermissions";
+import { useAuth } from "@/lib/auth";
 
 import { EntryTable } from "@/components/features/entries/entry-table";
 import { EntryForm } from "@/components/features/entries/entry-form";
 import { DateRangePicker } from "@/components/features/forms/date-range-picker";
+import { EntryDetailsDialog } from "@/components/features/entries/entry-details-dialog";
+import type { Entry } from "@/lib/api";
+import type { BudgetMember } from "@/lib/comment-types";
 import { MoneyInput } from "@/components/features/forms/money-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +48,7 @@ export default function BudgetEntriesPage() {
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { permissions } = useBudgetPermissions(params.id);
+  const { user } = useAuth();
   
   // Calculate this month's date range
   const getThisMonthRange = () => {
@@ -79,6 +84,8 @@ export default function BudgetEntriesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showCustomRange, setShowCustomRange] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+  const [showEntryDetails, setShowEntryDetails] = useState(false);
 
   const budgetQuery = useQuery({
     queryKey: ["budget", params.id],
@@ -140,8 +147,22 @@ export default function BudgetEntriesPage() {
   const categories = categoriesQuery.data ?? [];
   const members = membersQuery.data ?? [];
 
+  // Convert members to BudgetMember format for comments
+  const budgetMembers: BudgetMember[] = members.map(m => ({
+    user_id: m.user_id,
+    user_name: m.user_name || m.user_email,
+    user_email: m.user_email,
+    user_avatar: m.avatar || null,
+    role: m.role,
+  }));
+
   const handleSubmit = (values: FormValues) => {
     mutation.mutate(values);
+  };
+
+  const handleEntryClick = (entry: Entry) => {
+    setSelectedEntry(entry);
+    setShowEntryDetails(true);
   };
 
   const handleFormSubmit = async (data: any) => {
@@ -447,6 +468,7 @@ export default function BudgetEntriesPage() {
               queryClient.invalidateQueries({ queryKey: ["budget-balance", params.id] });
             }}
             canEdit={permissions.canEditEntries}
+            onEntryClick={handleEntryClick}
           />
           
           {/* Pagination Controls */}
@@ -496,6 +518,17 @@ export default function BudgetEntriesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Entry Details Dialog with Comments */}
+      <EntryDetailsDialog
+        entry={selectedEntry}
+        budgetId={params.id}
+        budgetMembers={budgetMembers}
+        currentUserId={user?.id || ""}
+        canComment={permissions.canEditEntries}
+        open={showEntryDetails}
+        onOpenChange={setShowEntryDetails}
+      />
     </div>
   );
 }

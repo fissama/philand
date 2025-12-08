@@ -4,7 +4,18 @@ use std::io::Cursor;
 
 use crate::utils::error::error::AppError;
 
+pub struct ProcessedImage {
+    pub data: Vec<u8>,
+    pub size: usize,
+}
+
 pub struct ImageProcessor;
+
+impl ImageProcessor {
+    pub fn new() -> Self {
+        Self
+    }
+}
 
 impl ImageProcessor {
     /// Process avatar image: decode, resize, compress, and return bytes
@@ -77,5 +88,37 @@ impl ImageProcessor {
         }
 
         Ok(())
+    }
+
+    /// Process comment attachment image: resize to max 1200px width, compress
+    pub fn process_comment_image(&self, image_data: &[u8]) -> Result<ProcessedImage, AppError> {
+        // Load image
+        let img = image::load_from_memory(image_data)
+            .map_err(|_| AppError::BadRequest("Invalid image format".to_string()))?;
+
+        // Get dimensions
+        let width = img.width();
+        let height = img.height();
+        
+        // Resize if width > 1200px (maintain aspect ratio)
+        let resized = if width > 1200 {
+            let new_height = (1200 * height) / width;
+            img.resize(1200, new_height, FilterType::Lanczos3)
+        } else {
+            img
+        };
+
+        // Convert to WebP format with compression
+        let mut buffer = Vec::new();
+        let mut cursor = Cursor::new(&mut buffer);
+        
+        resized
+            .write_to(&mut cursor, ImageFormat::WebP)
+            .map_err(|_| AppError::Internal)?;
+
+        Ok(ProcessedImage {
+            size: buffer.len(),
+            data: buffer,
+        })
     }
 }
