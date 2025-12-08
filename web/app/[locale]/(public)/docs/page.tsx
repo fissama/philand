@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/navigation';
@@ -17,10 +18,19 @@ import {
   ExternalLink,
   Target,
   Layers,
-  Settings,
   TrendingUp,
-  Lightbulb,
-  AlertCircle
+  BookOpen,
+  Terminal,
+  CheckCircle2,
+  Clock,
+  MessageSquare,
+  Bell,
+  Repeat,
+  Palette,
+  UserPlus,
+  FolderPlus,
+  PlusCircle,
+  FileText
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,29 +39,11 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ThemeSelector } from '@/components/features/shared/theme-selector';
 import { LanguageSwitcher } from '@/components/features/shared/language-switcher';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function DocsPage() {
   const t = useTranslations();
-
-  // Function to handle learn more clicks
-  const handleLearnMore = (categoryTitle: string) => {
-    // Map category titles to section IDs
-    const sectionMap: Record<string, string> = {
-      [t('docs.budgetManagement')]: 'features',
-      [t('docs.teamCollaboration')]: 'security-permissions',
-      [t('docs.advancedFeatures')]: 'tech-stack',
-      [t('docs.bestPractices')]: 'quick-start',
-      [t('docs.troubleshooting')]: 'community'
-    };
-
-    const sectionId = sectionMap[categoryTitle];
-    if (sectionId) {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  };
+  const [activeTab, setActiveTab] = useState('user-guide');
 
   const features = [
     {
@@ -124,72 +116,6 @@ export default function DocsPage() {
       name: 'Viewer',
       description: 'Read-only access to budget and summaries',
       level: 'Read Only'
-    }
-  ];
-
-  const gettingStartedSteps = [
-    {
-      step: 1,
-      title: t('docs.step1Title'),
-      description: t('docs.step1Description'),
-      icon: Users
-    },
-    {
-      step: 2,
-      title: t('docs.step2Title'),
-      description: t('docs.step2Description'),
-      icon: Settings
-    },
-    {
-      step: 3,
-      title: t('docs.step3Title'),
-      description: t('docs.step3Description'),
-      icon: Target
-    },
-    {
-      step: 4,
-      title: t('docs.step4Title'),
-      description: t('docs.step4Description'),
-      icon: TrendingUp
-    },
-    {
-      step: 5,
-      title: t('docs.step5Title'),
-      description: t('docs.step5Description'),
-      icon: BarChart3
-    }
-  ];
-
-  const guideCategories = [
-    {
-      title: t('docs.budgetManagement'),
-      description: t('docs.budgetManagementDescription'),
-      icon: Target,
-      color: 'bg-blue-500'
-    },
-    {
-      title: t('docs.teamCollaboration'),
-      description: t('docs.teamCollaborationDescription'),
-      icon: Users,
-      color: 'bg-green-500'
-    },
-    {
-      title: t('docs.advancedFeatures'),
-      description: t('docs.advancedFeaturesDescription'),
-      icon: Zap,
-      color: 'bg-purple-500'
-    },
-    {
-      title: t('docs.bestPractices'),
-      description: t('docs.bestPracticesDescription'),
-      icon: Lightbulb,
-      color: 'bg-yellow-500'
-    },
-    {
-      title: t('docs.troubleshooting'),
-      description: t('docs.troubleshootingDescription'),
-      icon: AlertCircle,
-      color: 'bg-red-500'
     }
   ];
 
@@ -270,223 +196,1283 @@ export default function DocsPage() {
           </div>
         </section>
 
-        {/* User Guide Section */}
+        {/* Tabbed Documentation */}
         <section className="space-y-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold">{t('docs.userGuide')}</h2>
-            <p className="text-muted-foreground">{t('docs.userGuideDescription')}</p>
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+              <TabsTrigger value="user-guide" className="gap-2">
+                <BookOpen className="h-4 w-4" />
+                User Guide
+              </TabsTrigger>
+              <TabsTrigger value="technical" className="gap-2">
+                <Terminal className="h-4 w-4" />
+                Technical Guide
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Getting Started Steps */}
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-semibold mb-2">{t('docs.gettingStartedGuide')}</h3>
-              <p className="text-muted-foreground">{t('docs.gettingStartedDescription')}</p>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {gettingStartedSteps.map((step, index) => (
-                <Card key={index} className="relative overflow-hidden">
-                  <div className="absolute top-4 right-4">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                      {step.step}
-                    </div>
-                  </div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <step.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <CardTitle className="text-lg">{step.title}</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{step.description}</CardDescription>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+            {/* USER GUIDE TAB */}
+            <TabsContent value="user-guide" className="space-y-12 mt-8">
 
-          {/* Guide Categories */}
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-semibold mb-2">{t('docs.learnMore')}</h3>
-              <p className="text-muted-foreground">Explore detailed guides for different aspects of Philand</p>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {guideCategories.map((category, index) => (
-                <Card key={index} className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-primary/50">
+              {/* Getting Started */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Getting Started</h3>
+                  <p className="text-muted-foreground">Complete walkthrough from signup to your first budget analysis</p>
+                </div>
+                
+                {/* Step 1: Create Account */}
+                <Card className="border-l-4 border-l-primary">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className={`rounded-lg p-2 ${category.color} text-white`}>
-                        <category.icon className="h-5 w-5" />
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        1
                       </div>
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {category.title}
-                      </CardTitle>
+                      <div>
+                        <CardTitle>Create Your Account</CardTitle>
+                        <CardDescription>Sign up and verify your email to get started</CardDescription>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription>{category.description}</CardDescription>
-                    <div className="mt-4">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-2 group-hover:gap-3 transition-all"
-                        onClick={() => handleLearnMore(category.title)}
-                      >
-                        {t('docs.learnMore')}
-                        <ArrowRight className="h-3 w-3" />
-                      </Button>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Click "Sign Up" in the top right corner</p>
+                        <p className="text-sm text-muted-foreground">Or use the button on the homepage</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Enter your email and create a strong password</p>
+                        <p className="text-sm text-muted-foreground">Use at least 8 characters with numbers and symbols</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Verify your email address</p>
+                        <p className="text-sm text-muted-foreground">Check your inbox for the verification link</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Log in with your credentials</p>
+                        <p className="text-sm text-muted-foreground">You'll be redirected to your dashboard</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* Separator */}
-        <div className="py-8">
-          <Separator />
-        </div>
-
-        {/* Technical Documentation Section */}
-        <section className="space-y-12">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold">Technical Documentation</h2>
-            <p className="text-muted-foreground">Developer resources and technical specifications</p>
-          </div>
-
-          {/* Features Section */}
-          <div id="features" className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-semibold">{t('docs.keyFeatures')}</h3>
-              <p className="text-muted-foreground">{t('docs.featuresDescription')}</p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+                {/* Step 2: Create First Budget */}
+                <Card className="border-l-4 border-l-primary">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <feature.icon className="h-5 w-5 text-primary" />
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        2
                       </div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
+                      <div>
+                        <CardTitle>Create Your First Budget</CardTitle>
+                        <CardDescription>Set up a budget to organize your finances</CardDescription>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription>{feature.description}</CardDescription>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Click "Create Budget" on your dashboard</p>
+                        <p className="text-sm text-muted-foreground">Or navigate to Budgets → Create Budget</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Choose a descriptive name</p>
+                        <p className="text-sm text-muted-foreground">Examples: "Personal 2025", "Family Budget", "Project X"</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Select your budget type</p>
+                        <p className="text-sm text-muted-foreground">Standard (general use), Saving, Debt, Investment, or Sharing</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Choose your currency</p>
+                        <p className="text-sm text-muted-foreground">USD, EUR, VND, or other supported currencies</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        e
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Add an optional description</p>
+                        <p className="text-sm text-muted-foreground">Helps you remember the budget's purpose</p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
 
-          {/* Tech Stack Section */}
-          <div id="tech-stack" className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-semibold">{t('docs.techStack')}</h3>
-              <p className="text-muted-foreground">{t('docs.techStackDescription')}</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              {techStack.map((stack, index) => (
-                <Card key={index}>
+                {/* Step 3: Set Up Categories */}
+                <Card className="border-l-4 border-l-primary">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <stack.icon className="h-6 w-6 text-primary" />
-                      <CardTitle>{stack.category}</CardTitle>
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        3
+                      </div>
+                      <div>
+                        <CardTitle>Set Up Categories</CardTitle>
+                        <CardDescription>Organize your transactions with custom categories</CardDescription>
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {stack.technologies.map((tech, techIndex) => (
-                        <Badge key={techIndex} variant="outline">{tech}</Badge>
-                      ))}
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Open your budget and go to the "Categories" tab</p>
+                        <p className="text-sm text-muted-foreground">Located in the budget navigation menu</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Click "Create Category"</p>
+                        <p className="text-sm text-muted-foreground">Start with common categories like Salary, Groceries, Rent</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Choose Income or Expense type</p>
+                        <p className="text-sm text-muted-foreground">Income: salary, bonus, gifts | Expense: food, bills, entertainment</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Customize with colors and icons</p>
+                        <p className="text-sm text-muted-foreground">Makes categories easy to identify at a glance</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        e
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Create 5-10 categories to start</p>
+                        <p className="text-sm text-muted-foreground">You can always add more later as needed</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
 
-          {/* Security & Roles Section */}
-          <div id="security-permissions" className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-semibold">{t('docs.securityPermissions')}</h3>
-              <p className="text-muted-foreground">{t('docs.securityDescription')}</p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {roles.map((role, index) => (
-                <Card key={index}>
-                  <CardHeader className="pb-3">
+                {/* Step 4: Add Your First Entries */}
+                <Card className="border-l-4 border-l-primary">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        4
+                      </div>
+                      <div>
+                        <CardTitle>Add Your First Transactions</CardTitle>
+                        <CardDescription>Start tracking your income and expenses</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Go to the "Entries" tab in your budget</p>
+                        <p className="text-sm text-muted-foreground">Or use the quick-add button (+ icon) from any page</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Click "Add Entry" or "Quick Add"</p>
+                        <p className="text-sm text-muted-foreground">The form will open with all necessary fields</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Select Income or Expense</p>
+                        <p className="text-sm text-muted-foreground">Choose the transaction type first</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Pick a category and enter the amount</p>
+                        <p className="text-sm text-muted-foreground">Example: Salary - $3,000 or Groceries - $150</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        e
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Set the date and add a description</p>
+                        <p className="text-sm text-muted-foreground">Description is optional but helps you remember details</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        f
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Save your entry</p>
+                        <p className="text-sm text-muted-foreground">It will appear in your entries list immediately</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-muted rounded-lg">
+                      <p className="text-sm font-medium mb-2">💡 Pro Tip:</p>
+                      <p className="text-sm text-muted-foreground">Add your current month's transactions to get an accurate picture. You can filter by date range to see specific periods.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Step 5: Invite Team Members (Optional) */}
+                <Card className="border-l-4 border-l-primary">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        5
+                      </div>
+                      <div>
+                        <CardTitle>Invite Team Members (Optional)</CardTitle>
+                        <CardDescription>Collaborate with family or team members</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Go to the "Members" tab in your budget</p>
+                        <p className="text-sm text-muted-foreground">Only budget owners can invite members</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Click "Add Member" or "Invite Member"</p>
+                        <p className="text-sm text-muted-foreground">Enter their email address</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Choose their role</p>
+                        <p className="text-sm text-muted-foreground">Manager (full access), Contributor (add/edit), or Viewer (read-only)</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Send the invitation</p>
+                        <p className="text-sm text-muted-foreground">They'll receive an email to join your budget</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Step 6: View Analytics */}
+                <Card className="border-l-4 border-l-primary">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-lg font-bold">
+                        6
+                      </div>
+                      <div>
+                        <CardTitle>View Your Analytics</CardTitle>
+                        <CardDescription>Understand your financial patterns</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        a
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Check the "Overview" tab</p>
+                        <p className="text-sm text-muted-foreground">See your current balance, income, and expenses at a glance</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        b
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Explore the "Summary" tab</p>
+                        <p className="text-sm text-muted-foreground">View monthly trends, charts, and category breakdowns</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        c
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Filter by date range</p>
+                        <p className="text-sm text-muted-foreground">Compare different periods: this month, last 3 months, this year</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex-shrink-0 mt-0.5">
+                        d
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Identify spending patterns</p>
+                        <p className="text-sm text-muted-foreground">See which categories consume most of your budget</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-muted rounded-lg">
+                      <p className="text-sm font-medium mb-2">🎉 Congratulations!</p>
+                      <p className="text-sm text-muted-foreground">You're now ready to manage your finances with Philand. Keep adding transactions regularly for the best insights.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Feature Guides */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Feature Guides</h3>
+                  <p className="text-muted-foreground">Learn how to use each feature effectively</p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Budget Management */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-blue-500 p-2 text-white">
+                          <FolderPlus className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Budget Management</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Create budgets</strong> for different purposes (personal, family, projects)
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Choose budget types:</strong> Standard, Saving, Debt, Investment, Sharing
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Archive budgets</strong> when no longer active
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Team Collaboration */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-green-500 p-2 text-white">
+                          <UserPlus className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Team Collaboration</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Invite members</strong> by email with specific roles
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Role-based permissions:</strong> Owner, Manager, Contributor, Viewer
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Manage team access</strong> and remove members when needed
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Categories */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-purple-500 p-2 text-white">
+                          <Palette className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Categories</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Create custom categories</strong> for income and expenses
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Customize with colors & icons</strong> for easy identification
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Hide unused categories</strong> to keep forms clean
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Entries */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-orange-500 p-2 text-white">
+                          <PlusCircle className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Transaction Entries</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Quick add entries</strong> from any page
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Filter by type, category, date,</strong> and member
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Edit or delete</strong> your own entries anytime
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Comments */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-pink-500 p-2 text-white">
+                          <MessageSquare className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Comments & Mentions</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Comment on entries</strong> to add context or notes
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Mention team members</strong> with @ to notify them
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Attach images</strong> like receipts or invoices
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Transfers */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-cyan-500 p-2 text-white">
+                          <Repeat className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Budget Transfers</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Transfer money</strong> between your budgets
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Automatic entry creation</strong> in both budgets
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Track transfer history</strong> with linked entries
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Notifications */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-yellow-500 p-2 text-white">
+                          <Bell className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Notifications</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Get notified</strong> when mentioned in comments
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Budget activity alerts</strong> for important changes
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Mark as read</strong> to keep your inbox organized
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Analytics */}
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-indigo-500 p-2 text-white">
+                          <BarChart3 className="h-5 w-5" />
+                        </div>
+                        <CardTitle>Analytics & Reports</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Overview dashboard</strong> with key metrics
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Monthly summaries</strong> with charts and trends
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Category breakdown</strong> to see spending patterns
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Development Roadmap */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Development Roadmap</h3>
+                  <p className="text-muted-foreground">Structured development phases for comprehensive financial management</p>
+                </div>
+
+                {/* Phase 1 */}
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{role.name}</CardTitle>
-                      <Badge variant="secondary" className="text-xs">{role.level}</Badge>
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-blue-500 p-2 text-white">
+                          <Target className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Phase 1: Enhanced Budget Management</CardTitle>
+                          <CardDescription>Budget Types & Entry Enhancements • Q4 2025</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">In Progress</Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-sm">{role.description}</CardDescription>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Budget Types:</strong> Personal, Shared, Business, Project budgets with UI badges
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Entry Comments:</strong> Add detailed notes and context to transactions
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Entry Tags:</strong> Flexible tagging system for better organization
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Advanced Filtering:</strong> Filter by tags, comments, and budget types
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Bulk Operations:</strong> Mass edit tags and comments on multiple entries
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
 
-          {/* Quick Start Section */}
-          <div id="quick-start" className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-2xl font-semibold">{t('docs.quickStart')}</h3>
-              <p className="text-muted-foreground">{t('docs.quickStartDescription')}</p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5" />
-                    {t('docs.dockerSetup')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="bg-muted rounded-lg p-4 font-mono text-sm">
-                    <div>git clone https://github.com/fissama/philand.git</div>
-                    <div>cd philand</div>
-                    <div>cp .env.example .env</div>
-                    <div>docker-compose up -d --build</div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Access the app at http://localhost:3000
-                  </p>
-                </CardContent>
-              </Card>
+                {/* Phase 2 */}
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-green-500 p-2 text-white">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Phase 2: Collaborative Finance</CardTitle>
+                          <CardDescription>Sharing & Split Management • Q1 2026</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Planned</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Budget Sharing:</strong> Share budgets with external users (payer system)
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Equal Split:</strong> Automatic expense splitting among participants
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Balance Tracking:</strong> Real-time balance calculations between members
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Settlement System:</strong> Track who owes whom and settlement history
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Split Notifications:</strong> Alerts for new shared expenses and settlements
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Code className="h-5 w-5" />
-                    {t('docs.localDevelopment')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="bg-muted rounded-lg p-4 font-mono text-sm">
-                    <div>cargo sqlx migrate run</div>
-                    <div>cargo run</div>
-                    <div>cd web && npm install</div>
-                    <div>npm run dev</div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Backend: :8080, Frontend: :3000
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                {/* Phase 3 */}
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-purple-500 p-2 text-white">
+                          <TrendingUp className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Phase 3: Specialized Financial Profiles</CardTitle>
+                          <CardDescription>Advanced Financial Management • Q2 2026</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Planned</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Savings Tracking:</strong> Dedicated savings goals and progress monitoring
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Debt Management:</strong> Debt tracking with payment schedules and interest
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Investment Portfolio:</strong> Basic investment tracking and performance metrics
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Financial Profiles:</strong> Customizable profiles for different financial behaviors
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Goal Setting:</strong> SMART financial goals with milestone tracking
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Phase 4 */}
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-orange-500 p-2 text-white">
+                          <Repeat className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Phase 4: Advanced Operations</CardTitle>
+                          <CardDescription>Transaction Safety & Transfers • Q3 2026</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Planned</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Inter-Budget Transfers:</strong> Safe transfers between budgets with integrity
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Transfer History:</strong> Complete audit trail of all transfers
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Batch Transfers:</strong> Multiple transfers in a single transaction
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Transfer Approval:</strong> Multi-step approval process for large transfers
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Rollback System:</strong> Safe rollback of transfers with proper validation
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Phase 5 */}
+                <Card className="border-l-4 border-l-red-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-red-500 p-2 text-white">
+                          <Shield className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Phase 5: Audit & Compliance</CardTitle>
+                          <CardDescription>Complete Audit System • Q4 2026</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Planned</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Comprehensive Audit Log:</strong> Track all important actions and changes
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>User Activity Tracking:</strong> Detailed logs of user interactions
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Data Export:</strong> Export audit logs for compliance and analysis
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Retention Policies:</strong> Configurable data retention and archival
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Compliance Reports:</strong> Generate reports for financial auditing
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Future Enhancements */}
+                <Card className="border-l-4 border-l-cyan-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-cyan-500 p-2 text-white">
+                          <Zap className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <CardTitle>Future Enhancements</CardTitle>
+                          <CardDescription>Advanced Features • 2027+</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Future</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Mobile Applications:</strong> Native iOS and Android apps
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>API Integrations:</strong> Bank account synchronization and fintech partnerships
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Advanced Analytics:</strong> AI-powered insights and spending predictions
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Multi-Currency:</strong> Advanced currency conversion and international support
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <strong>Enterprise Features:</strong> SSO, advanced security, and enterprise-grade features
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* TECHNICAL GUIDE TAB */}
+            <TabsContent value="technical" className="space-y-12 mt-8">
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Technology Stack</h3>
+                  <p className="text-muted-foreground">Built with modern, reliable technologies</p>
+                </div>
+
+                
+                <div className="grid md:grid-cols-3 gap-6">
+                  {techStack.map((stack, index) => (
+                    <Card key={index}>
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <stack.icon className="h-6 w-6 text-primary" />
+                          <CardTitle>{stack.category}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {stack.technologies.map((tech, techIndex) => (
+                            <Badge key={techIndex} variant="outline">{tech}</Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Features */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Key Features</h3>
+                  <p className="text-muted-foreground">Technical capabilities and architecture</p>
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {features.map((feature, index) => (
+                    <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-lg bg-primary/10 p-2">
+                            <feature.icon className="h-5 w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-lg">{feature.title}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription>{feature.description}</CardDescription>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Installation & Setup */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Installation & Setup</h3>
+                  <p className="text-muted-foreground">Get Philand running on your machine</p>
+                </div>
+
+                {/* Prerequisites */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Prerequisites
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold mb-2">Backend Requirements</h4>
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          <li>• Rust 1.70+ (latest stable)</li>
+                          <li>• MySQL 8.0+</li>
+                          <li>• Cargo & SQLx CLI</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Frontend Requirements</h4>
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          <li>• Node.js 18+</li>
+                          <li>• npm or yarn</li>
+                          <li>• Modern web browser</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Docker Setup */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Database className="h-5 w-5" />
+                        Docker Setup (Recommended)
+                      </CardTitle>
+                      <CardDescription>Easiest way to get started</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="bg-muted rounded-lg p-4 font-mono text-xs space-y-1">
+                        <div className="text-muted-foreground"># Clone the repository</div>
+                        <div>git clone https://github.com/fissama/philand.git</div>
+                        <div>cd philand</div>
+                        <div className="mt-2 text-muted-foreground"># Configure environment</div>
+                        <div>cp .env.example .env</div>
+                        <div className="text-muted-foreground"># Edit .env with your settings</div>
+                        <div className="mt-2 text-muted-foreground"># Start with Docker</div>
+                        <div>docker-compose up -d --build</div>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground">Access at <code className="bg-muted px-1 rounded">http://localhost:3000</code></span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Local Development */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Code className="h-5 w-5" />
+                        Local Development
+                      </CardTitle>
+                      <CardDescription>For development and testing</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="bg-muted rounded-lg p-4 font-mono text-xs space-y-1">
+                        <div className="text-muted-foreground"># Setup database</div>
+                        <div>./scripts/setup.sh</div>
+                        <div className="mt-2 text-muted-foreground"># Start backend (Terminal 1)</div>
+                        <div>cargo build --release</div>
+                        <div>./target/release/philand</div>
+                        <div className="mt-2 text-muted-foreground"># Start frontend (Terminal 2)</div>
+                        <div>cd web</div>
+                        <div>npm install</div>
+                        <div>npm run dev</div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground">Backend: <code className="bg-muted px-1 rounded">http://localhost:8080</code></span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground">Frontend: <code className="bg-muted px-1 rounded">http://localhost:3000</code></span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Configuration */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Configuration</h3>
+                  <p className="text-muted-foreground">Environment variables and settings</p>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Environment Variables</CardTitle>
+                    <CardDescription>Configure your .env file with these settings</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-muted rounded-lg p-4 font-mono text-xs space-y-1">
+                      <div className="text-muted-foreground"># Database</div>
+                      <div>DB_URL="mysql://user:password@host:port/database"</div>
+                      <div className="mt-2 text-muted-foreground"># JWT Secret</div>
+                      <div>JWT_SECRET="your-secret-key-here"</div>
+                      <div className="mt-2 text-muted-foreground"># Server</div>
+                      <div>SERVER_HOST="0.0.0.0"</div>
+                      <div>SERVER_PORT=8080</div>
+                      <div className="mt-2 text-muted-foreground"># Optional: S3 Storage</div>
+                      <div>AWS_ACCESS_KEY_ID="your-key"</div>
+                      <div>AWS_SECRET_ACCESS_KEY="your-secret"</div>
+                      <div>AWS_REGION="us-east-1"</div>
+                      <div>S3_BUCKET_NAME="your-bucket"</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Security & Permissions */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Security & Permissions</h3>
+                  <p className="text-muted-foreground">Role-based access control system</p>
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {roles.map((role, index) => (
+                    <Card key={index}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{role.name}</CardTitle>
+                          <Badge variant="secondary" className="text-xs">{role.level}</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="text-sm">{role.description}</CardDescription>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* API Documentation */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">API Documentation</h3>
+                  <p className="text-muted-foreground">RESTful API endpoints</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Authentication</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm font-mono">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/auth/signup</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/auth/login</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/auth/logout</code>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Budgets</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm font-mono">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-600">GET</Badge>
+                        <code>/api/budgets</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/budgets</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600">PUT</Badge>
+                        <code>/api/budgets/:id</code>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Entries</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm font-mono">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-600">GET</Badge>
+                        <code>/api/entries</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/entries</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-red-500/10 text-red-600">DELETE</Badge>
+                        <code>/api/entries/:id</code>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Comments</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm font-mono">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-600">GET</Badge>
+                        <code>/api/comments</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-500/10 text-green-600">POST</Badge>
+                        <code>/api/comments</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600">PUT</Badge>
+                        <code>/api/comments/:id</code>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </section>
 
         {/* CTA Section */}
