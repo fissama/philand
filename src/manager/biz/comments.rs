@@ -46,7 +46,7 @@ impl CommentService {
             for mentioned_user_id in mention_ids {
                 // Don't notify if user mentions themselves
                 if mentioned_user_id != user_id {
-                    let _ = Self::create_mention_notification(
+                    match Self::create_mention_notification(
                         pool,
                         mentioned_user_id,
                         user_id,
@@ -54,7 +54,12 @@ impl CommentService {
                         entry_id,
                         &comment_id,
                         &req.comment_text,
-                    ).await;
+                    ).await {
+                        Ok(_) => tracing::info!("Created notification for user {}", mentioned_user_id),
+                        Err(e) => tracing::error!("Failed to create notification: {:?}", e),
+                    }
+                } else {
+                    tracing::debug!("Skipping self-mention notification for user {}", user_id);
                 }
             }
         }
@@ -265,6 +270,7 @@ impl CommentService {
             notification_type: "comment_mention".to_string(),
             title: format!("{} mentioned you in a comment", commenter_name),
             message: format!("On \"{}\": {}", entry_desc, preview),
+            // Note: Frontend will handle locale prefix automatically via next-intl routing
             link_url: Some(format!("/budgets/{}/entries?entry={}", budget_id, entry_id)),
             related_id: Some(comment_id.to_string()),
         };

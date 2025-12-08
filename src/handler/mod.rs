@@ -21,4 +21,4 @@ pub struct AppState {
     pub pool: DbPool,
     pub rate_limiter: Arc<RateLimiter>,
 }
-pub type AppCtx = Arc<AppState>;
+// pub type AppCtx = Arc<AppState>;

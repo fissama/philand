@@ -101,23 +101,21 @@ impl S3Storage {
         Ok(())
     }
 
-    /// Check if avatar exists in S3
-    pub async fn avatar_exists(&self, user_id: &str) -> bool {
-        let key = format!("avatars/{}.webp", user_id);
+    // pub async fn avatar_exists(&self, user_id: &str) -> bool {
+    //     let key = format!("avatars/{}.webp", user_id);
         
-        self.client
-            .head_object()
-            .bucket(&self.bucket)
-            .key(&key)
-            .send()
-            .await
-            .is_ok()
-    }
+    //     self.client
+    //         .head_object()
+    //         .bucket(&self.bucket)
+    //         .key(&key)
+    //         .send()
+    //         .await
+    //         .is_ok()
+    // }
 
-    /// Get avatar URL (doesn't check if exists)
-    pub fn get_avatar_url(&self, user_id: &str) -> String {
-        format!("{}/avatars/{}.webp", self.public_url, user_id)
-    }
+    // pub fn get_avatar_url(&self, user_id: &str) -> String {
+    //     format!("{}/avatars/{}.webp", self.public_url, user_id)
+    // }
 
     /// Upload comment attachment to S3 and return public URL
     pub async fn upload_comment_attachment(

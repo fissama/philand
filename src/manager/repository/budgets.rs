@@ -4,56 +4,56 @@ use sqlx::Row;
 pub struct BudgetRepo;
 
 impl BudgetRepo {
-    pub async fn list(pool: &DbPool, owner_id: Option<String>, query: Option<String>) -> Result<Vec<Budget>, AppError> {
-        let mut sql = String::from("SELECT * FROM budgets WHERE 1=1");
-        let mut bindings = Vec::new();
+    // pub async fn list(pool: &DbPool, owner_id: Option<String>, query: Option<String>) -> Result<Vec<Budget>, AppError> {
+    //     let mut sql = String::from("SELECT * FROM budgets WHERE 1=1");
+    //     let mut bindings = Vec::new();
         
-        if let Some(oid) = owner_id {
-            sql.push_str(" AND owner_id = ?");
-            bindings.push(oid);
-        }
+    //     if let Some(oid) = owner_id {
+    //         sql.push_str(" AND owner_id = ?");
+    //         bindings.push(oid);
+    //     }
         
-        if let Some(q) = query {
-            sql.push_str(" AND (name LIKE ? OR description LIKE ?)");
-            let search_pattern = format!("%{}%", q);
-            bindings.push(search_pattern.clone());
-            bindings.push(search_pattern);
-        }
+    //     if let Some(q) = query {
+    //         sql.push_str(" AND (name LIKE ? OR description LIKE ?)");
+    //         let search_pattern = format!("%{}%", q);
+    //         bindings.push(search_pattern.clone());
+    //         bindings.push(search_pattern);
+    //     }
         
-        sql.push_str(" ORDER BY created_at DESC");
+    //     sql.push_str(" ORDER BY created_at DESC");
         
-        let mut query_builder = sqlx::query_as::<_, Budget>(&sql);
-        for binding in bindings {
-            query_builder = query_builder.bind(binding);
-        }
+    //     let mut query_builder = sqlx::query_as::<_, Budget>(&sql);
+    //     for binding in bindings {
+    //         query_builder = query_builder.bind(binding);
+    //     }
         
-        Ok(query_builder.fetch_all(pool).await?)
-    }
+    //     Ok(query_builder.fetch_all(pool).await?)
+    // }
     
-    pub async fn list_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<Budget>, AppError> {
-        let mut sql = String::from(
-            "SELECT b.* FROM budgets b 
-             INNER JOIN budget_members bm ON b.id = bm.budget_id 
-             WHERE bm.user_id = ? AND b.archived = 0"
-        );
-        let mut bindings = vec![user_id.to_string()];
+    // pub async fn list_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<Budget>, AppError> {
+    //     let mut sql = String::from(
+    //         "SELECT b.* FROM budgets b 
+    //          INNER JOIN budget_members bm ON b.id = bm.budget_id 
+    //          WHERE bm.user_id = ? AND b.archived = 0"
+    //     );
+    //     let mut bindings = vec![user_id.to_string()];
         
-        if let Some(q) = query {
-            sql.push_str(" AND (b.name LIKE ? OR b.description LIKE ?)");
-            let search_pattern = format!("%{}%", q);
-            bindings.push(search_pattern.clone());
-            bindings.push(search_pattern);
-        }
+    //     if let Some(q) = query {
+    //         sql.push_str(" AND (b.name LIKE ? OR b.description LIKE ?)");
+    //         let search_pattern = format!("%{}%", q);
+    //         bindings.push(search_pattern.clone());
+    //         bindings.push(search_pattern);
+    //     }
         
-        sql.push_str(" ORDER BY b.created_at DESC");
+    //     sql.push_str(" ORDER BY b.created_at DESC");
         
-        let mut query_builder = sqlx::query_as::<_, Budget>(&sql);
-        for binding in bindings {
-            query_builder = query_builder.bind(binding);
-        }
+    //     let mut query_builder = sqlx::query_as::<_, Budget>(&sql);
+    //     for binding in bindings {
+    //         query_builder = query_builder.bind(binding);
+    //     }
         
-        Ok(query_builder.fetch_all(pool).await?)
-    }
+    //     Ok(query_builder.fetch_all(pool).await?)
+    // }
     
     pub async fn list_with_roles_for_user(pool: &DbPool, user_id: &str, query: Option<String>) -> Result<Vec<BudgetWithRole>, AppError> {
         let mut sql = String::from(

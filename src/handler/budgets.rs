@@ -8,7 +8,7 @@ use super::{AppState};
 
 #[derive(Deserialize)]
 pub struct BudgetFilter { 
-    owner_id: Option<String>,
+    // owner_id: Option<String>,
     query: Option<String>,
 }
 

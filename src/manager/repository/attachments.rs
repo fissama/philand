@@ -1,47 +1,44 @@
-use crate::manager::models::comment::{EntryAttachment, AttachmentWithUser};
 use crate::utils::{database::database::DbPool, error::error::AppError};
 use sqlx::Row;
 
 pub struct AttachmentRepo;
 
 impl AttachmentRepo {
-    /// List all attachments for an entry
-    pub async fn list_by_entry(
-        pool: &DbPool,
-        entry_id: &str,
-    ) -> Result<Vec<AttachmentWithUser>, AppError> {
-        let attachments = sqlx::query(
-            "SELECT a.id, a.entry_id, a.comment_id, a.user_id, a.file_url, a.file_name, \
-                    a.file_size, a.mime_type, a.created_at, \
-                    u.name as user_name, u.avatar as user_avatar \
-             FROM entry_attachments a \
-             INNER JOIN users u ON a.user_id = u.id \
-             WHERE a.entry_id = ? AND a.deleted_at IS NULL \
-             ORDER BY a.created_at DESC"
-        )
-        .bind(entry_id)
-        .fetch_all(pool)
-        .await?;
+    // pub async fn list_by_entry(
+    //     pool: &DbPool,
+    //     entry_id: &str,
+    // ) -> Result<Vec<AttachmentWithUser>, AppError> {
+    //     let attachments = sqlx::query(
+    //         "SELECT a.id, a.entry_id, a.comment_id, a.user_id, a.file_url, a.file_name, \
+    //                 a.file_size, a.mime_type, a.created_at, \
+    //                 u.name as user_name, u.avatar as user_avatar \
+    //          FROM entry_attachments a \
+    //          INNER JOIN users u ON a.user_id = u.id \
+    //          WHERE a.entry_id = ? AND a.deleted_at IS NULL \
+    //          ORDER BY a.created_at DESC"
+    //     )
+    //     .bind(entry_id)
+    //     .fetch_all(pool)
+    //     .await?;
 
-        Ok(attachments
-            .into_iter()
-            .map(|row| AttachmentWithUser {
-                id: row.get("id"),
-                entry_id: row.get("entry_id"),
-                comment_id: row.get("comment_id"),
-                user_id: row.get("user_id"),
-                user_name: row.get("user_name"),
-                user_avatar: row.get("user_avatar"),
-                file_url: row.get("file_url"),
-                file_name: row.get("file_name"),
-                file_size: row.get("file_size"),
-                mime_type: row.get("mime_type"),
-                created_at: row.get("created_at"),
-            })
-            .collect())
-    }
+    //     Ok(attachments
+    //         .into_iter()
+    //         .map(|row| AttachmentWithUser {
+    //             id: row.get("id"),
+    //             entry_id: row.get("entry_id"),
+    //             comment_id: row.get("comment_id"),
+    //             user_id: row.get("user_id"),
+    //             user_name: row.get("user_name"),
+    //             user_avatar: row.get("user_avatar"),
+    //             file_url: row.get("file_url"),
+    //             file_name: row.get("file_name"),
+    //             file_size: row.get("file_size"),
+    //             mime_type: row.get("mime_type"),
+    //             created_at: row.get("created_at"),
+    //         })
+    //         .collect())
+    // }
 
-    /// Create a new attachment (temporary, not linked to comment yet)
     pub async fn create(
         pool: &DbPool,
         attachment_id: &str,
@@ -113,19 +110,18 @@ impl AttachmentRepo {
         Ok((entry_id, file_url))
     }
 
-    /// Get attachment by ID
-    pub async fn get_by_id(
-        pool: &DbPool,
-        attachment_id: &str,
-    ) -> Result<EntryAttachment, AppError> {
-        sqlx::query_as::<_, EntryAttachment>(
-            "SELECT * FROM entry_attachments WHERE id = ? AND deleted_at IS NULL"
-        )
-        .bind(attachment_id)
-        .fetch_optional(pool)
-        .await?
-        .ok_or(AppError::NotFound)
-    }
+    // pub async fn get_by_id(
+    //     pool: &DbPool,
+    //     attachment_id: &str,
+    // ) -> Result<EntryAttachment, AppError> {
+    //     sqlx::query_as::<_, EntryAttachment>(
+    //         "SELECT * FROM entry_attachments WHERE id = ? AND deleted_at IS NULL"
+    //     )
+    //     .bind(attachment_id)
+    //     .fetch_optional(pool)
+    //     .await?
+    //     .ok_or(AppError::NotFound)
+    // }
 
     /// Update attachment count for an entry
     async fn update_attachment_count(pool: &DbPool, entry_id: &str) -> Result<(), AppError> {
@@ -141,55 +137,53 @@ impl AttachmentRepo {
         Ok(())
     }
 
-    /// Verify user has access to attachment (is member of budget)
-    pub async fn verify_access(
-        pool: &DbPool,
-        attachment_id: &str,
-        user_id: &str,
-    ) -> Result<(String, String), AppError> {
-        let result = sqlx::query(
-            "SELECT e.id as entry_id, e.budget_id \
-             FROM entry_attachments a \
-             INNER JOIN entries e ON a.entry_id = e.id \
-             INNER JOIN budget_members bm ON e.budget_id = bm.budget_id \
-             WHERE a.id = ? AND bm.user_id = ? AND a.deleted_at IS NULL"
-        )
-        .bind(attachment_id)
-        .bind(user_id)
-        .fetch_optional(pool)
-        .await?;
+    // pub async fn verify_access(
+    //     pool: &DbPool,
+    //     attachment_id: &str,
+    //     user_id: &str,
+    // ) -> Result<(String, String), AppError> {
+    //     let result = sqlx::query(
+    //         "SELECT e.id as entry_id, e.budget_id \
+    //          FROM entry_attachments a \
+    //          INNER JOIN entries e ON a.entry_id = e.id \
+    //          INNER JOIN budget_members bm ON e.budget_id = bm.budget_id \
+    //          WHERE a.id = ? AND bm.user_id = ? AND a.deleted_at IS NULL"
+    //     )
+    //     .bind(attachment_id)
+    //     .bind(user_id)
+    //     .fetch_optional(pool)
+    //     .await?;
 
-        match result {
-            Some(row) => Ok((row.get("entry_id"), row.get("budget_id"))),
-            None => Err(AppError::Forbidden),
-        }
-    }
+    //     match result {
+    //         Some(row) => Ok((row.get("entry_id"), row.get("budget_id"))),
+    //         None => Err(AppError::Forbidden),
+    //     }
+    // }
 
-    /// Clean up orphaned attachments (not linked to any comment after timeout)
-    pub async fn cleanup_orphaned(pool: &DbPool, hours: i32) -> Result<Vec<String>, AppError> {
-        let orphaned = sqlx::query(
-            "SELECT id, file_url FROM entry_attachments \
-             WHERE comment_id IS NULL \
-             AND created_at < DATE_SUB(NOW(), INTERVAL ? HOUR) \
-             AND deleted_at IS NULL"
-        )
-        .bind(hours)
-        .fetch_all(pool)
-        .await?;
+    // pub async fn cleanup_orphaned(pool: &DbPool, hours: i32) -> Result<Vec<String>, AppError> {
+    //     let orphaned = sqlx::query(
+    //         "SELECT id, file_url FROM entry_attachments \
+    //          WHERE comment_id IS NULL \
+    //          AND created_at < DATE_SUB(NOW(), INTERVAL ? HOUR) \
+    //          AND deleted_at IS NULL"
+    //     )
+    //     .bind(hours)
+    //     .fetch_all(pool)
+    //     .await?;
 
-        let mut file_urls = Vec::new();
-        for row in orphaned {
-            let id: String = row.get("id");
-            let file_url: String = row.get("file_url");
+    //     let mut file_urls = Vec::new();
+    //     for row in orphaned {
+    //         let id: String = row.get("id");
+    //         let file_url: String = row.get("file_url");
             
-            sqlx::query("UPDATE entry_attachments SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-                .bind(&id)
-                .execute(pool)
-                .await?;
+    //         sqlx::query("UPDATE entry_attachments SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+    //             .bind(&id)
+    //             .execute(pool)
+    //             .await?;
             
-            file_urls.push(file_url);
-        }
+    //         file_urls.push(file_url);
+    //     }
 
-        Ok(file_urls)
-    }
+    //     Ok(file_urls)
+    // }
 }

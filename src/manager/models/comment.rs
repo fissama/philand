@@ -1,5 +1,28 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use chrono::NaiveDateTime;
+
+// Helper functions for UTC serialization
+fn serialize_datetime_as_utc<S>(dt: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let utc_dt = dt.and_utc();
+    serializer.serialize_str(&utc_dt.to_rfc3339())
+}
+
+fn serialize_optional_datetime_as_utc<S>(dt: &Option<NaiveDateTime>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match dt {
+        Some(dt) => {
+            let utc_dt = dt.and_utc();
+            serializer.serialize_some(&utc_dt.to_rfc3339())
+        }
+        None => serializer.serialize_none(),
+    }
+}
 
 // ============ Comment Models ============
 
@@ -9,9 +32,12 @@ pub struct EntryComment {
     pub entry_id: String,
     pub user_id: String,
     pub comment_text: String,
-    pub created_at: chrono::NaiveDateTime,
-    pub updated_at: chrono::NaiveDateTime,
-    pub deleted_at: Option<chrono::NaiveDateTime>,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub created_at: NaiveDateTime,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub updated_at: NaiveDateTime,
+    #[serde(serialize_with = "serialize_optional_datetime_as_utc")]
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Serialize)]
@@ -25,8 +51,10 @@ pub struct CommentWithDetails {
     pub comment_text: String,
     pub mentions: Vec<MentionedUser>,
     pub attachments: Vec<CommentAttachment>,
-    pub created_at: chrono::NaiveDateTime,
-    pub updated_at: chrono::NaiveDateTime,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub created_at: NaiveDateTime,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -44,7 +72,8 @@ pub struct CommentAttachment {
     pub file_name: String,
     pub file_size: i32,
     pub mime_type: String,
-    pub created_at: chrono::NaiveDateTime,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub created_at: NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize)]
@@ -62,6 +91,7 @@ pub struct UpdateCommentReq {
 
 // ============ Attachment Models ============
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, FromRow)]
 pub struct EntryAttachment {
     pub id: String,
@@ -72,10 +102,13 @@ pub struct EntryAttachment {
     pub file_name: String,
     pub file_size: i32,
     pub mime_type: String,
-    pub created_at: chrono::NaiveDateTime,
-    pub deleted_at: Option<chrono::NaiveDateTime>,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub created_at: NaiveDateTime,
+    #[serde(serialize_with = "serialize_optional_datetime_as_utc")]
+    pub deleted_at: Option<NaiveDateTime>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 pub struct AttachmentWithUser {
     pub id: String,
@@ -88,7 +121,8 @@ pub struct AttachmentWithUser {
     pub file_name: String,
     pub file_size: i32,
     pub mime_type: String,
-    pub created_at: chrono::NaiveDateTime,
+    #[serde(serialize_with = "serialize_datetime_as_utc")]
+    pub created_at: NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize)]
@@ -108,10 +142,10 @@ pub struct UploadAttachmentResp {
 
 // ============ Mention Models ============
 
-#[derive(Debug, Serialize, FromRow)]
-pub struct CommentMention {
-    pub id: String,
-    pub comment_id: String,
-    pub mentioned_user_id: String,
-    pub created_at: chrono::NaiveDateTime,
-}
+// #[derive(Debug, Serialize, FromRow)]
+// pub struct CommentMention {
+//     pub id: String,
+//     pub comment_id: String,
+//     pub mentioned_user_id: String,
+//     pub created_at: chrono::NaiveDateTime,
+// }

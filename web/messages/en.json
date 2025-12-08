@@ -470,5 +470,12 @@
     "documentation": "Documentation",
     "support": "Support",
     "community": "Community"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "allCaughtUp": "You're all caught up!",
+    "markAllRead": "Mark all read",
+    "markAsRead": "Mark as read"
   }
 }

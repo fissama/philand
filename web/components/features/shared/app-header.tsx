@@ -63,7 +63,9 @@ export function AppHeader() {
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeSelector />
-        <NotificationBell />
+        <div className="hidden md:block">
+          <NotificationBell />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">

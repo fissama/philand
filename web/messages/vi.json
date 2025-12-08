@@ -470,5 +470,12 @@
     "documentation": "Tài liệu",
     "support": "Hỗ trợ",
     "community": "Cộng đồng"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "noNotifications": "Không có thông báo",
+    "allCaughtUp": "Bạn đã xem hết!",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "markAsRead": "Đánh dấu đã đọc"
   }
 }

@@ -1,10 +1,9 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::{
-    routing::{get, post, patch, put, delete}, 
+    routing::{get, post, patch, delete}, 
     Router, 
-    http::Method, 
-    http::HeaderValue,
+    http::Method,
     body::Body,
     http::Request,
     middleware::Next,

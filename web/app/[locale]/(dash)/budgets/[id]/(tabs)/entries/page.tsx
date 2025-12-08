@@ -3,8 +3,9 @@
 
 "use client";
 
-import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { useRouter } from "@/lib/navigation";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -46,6 +47,8 @@ type DateRangePreset = "3days" | "7days" | "thisMonth" | "lastMonth" | "custom";
 export default function BudgetEntriesPage() {
   const t = useTranslations();
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { permissions } = useBudgetPermissions(params.id);
   const { user } = useAuth();
@@ -155,6 +158,20 @@ export default function BudgetEntriesPage() {
     user_avatar: m.avatar || null,
     role: m.role,
   }));
+
+  // Handle entry query parameter from notifications
+  useEffect(() => {
+    const entryId = searchParams.get('entry');
+    if (entryId && entriesQuery.data) {
+      const entry = entriesQuery.data.find(e => e.id === entryId);
+      if (entry) {
+        setSelectedEntry(entry);
+        setShowEntryDetails(true);
+        // Clear the query parameter after opening (keep the current path without query params)
+        router.replace(`${globalThis.location.pathname}`, { scroll: false });
+      }
+    }
+  }, [searchParams, entriesQuery.data, router]);
 
   const handleSubmit = (values: FormValues) => {
     mutation.mutate(values);

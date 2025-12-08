@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { NotificationList } from './notification-list';
 import { apiRequest } from '@/lib/api';
+import { useMediaQuery } from '@/lib/hooks/use-media-query';
 
 interface UnreadCountResponse {
   count: number;
@@ -19,6 +21,8 @@ interface UnreadCountResponse {
 export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const fetchUnreadCount = async () => {
     try {
@@ -41,6 +45,30 @@ export function NotificationBell() {
     fetchUnreadCount();
   };
 
+  const handleClick = () => {
+    if (isMobile) {
+      router.push('/notifications');
+    }
+  };
+
+  // On mobile, just show a button that navigates
+  if (isMobile) {
+    return (
+      <Button variant="ghost" size="icon" className="relative" onClick={handleClick}>
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <Badge
+            variant="destructive"
+            className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]"
+          >
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </Badge>
+        )}
+      </Button>
+    );
+  }
+
+  // On desktop, show dropdown
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>

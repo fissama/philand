@@ -1,4 +1,4 @@
-use crate::manager::models::notification::{Notification, CreateNotificationReq};
+use crate::manager::models::notification::{Notification, NotificationRow, CreateNotificationReq};
 use crate::utils::{database::database::DbPool, error::error::AppError};
 
 pub struct NotificationRepo;
@@ -52,13 +52,13 @@ impl NotificationRepo {
         
         query.push_str(" ORDER BY created_at DESC LIMIT ?");
 
-        let notifications = sqlx::query_as::<_, Notification>(&query)
+        let rows = sqlx::query_as::<_, NotificationRow>(&query)
             .bind(user_id)
             .bind(limit)
             .fetch_all(pool)
             .await?;
 
-        Ok(notifications)
+        Ok(rows.into_iter().map(Notification::from).collect())
     }
 
     /// Mark notifications as read
@@ -145,13 +145,16 @@ impl NotificationRepo {
     }
 
     /// Delete old read notifications (cleanup job)
+    /// Deletes notifications that have been read for more than specified days
+    /// Unread notifications are kept regardless of age
     pub async fn cleanup_old_notifications(
         pool: &DbPool,
         days: i32,
     ) -> Result<u64, AppError> {
         let result = sqlx::query(
             "DELETE FROM notifications \
-             WHERE is_read = TRUE AND read_at < DATE_SUB(NOW(), INTERVAL ? DAY)"
+             WHERE is_read = TRUE AND read_at IS NOT NULL \
+             AND read_at < DATE_SUB(NOW(), INTERVAL ? DAY)"
         )
         .bind(days)
         .execute(pool)
