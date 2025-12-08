@@ -45,7 +45,6 @@ ssl/
 *.crt
 
 # Database backups
-*.sql
 backup/
 backups/
 
