@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from 'next-intl';
 
+import { BudgetIncomeExpenseChart } from "@/components/features/dashboard/budget-income-expense-chart";
+import { CategorySpendingDonut } from "@/components/features/dashboard/category-spending-donut";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
@@ -52,15 +54,33 @@ export default function BudgetOverviewPage() {
     
     return { from, to };
   }, [period]);
+
+  // Get last 6 months for charts
+  const last6Months = useMemo(() => {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(now.getMonth() - 5);
+    return {
+      from: new Date(sixMonthsAgo.getFullYear(), sixMonthsAgo.getMonth(), 1).toISOString().split("T")[0],
+      to: now.toISOString().split("T")[0]
+    };
+  }, []);
   
   const entriesQuery = useQuery({
     queryKey: ["entries", params.id, dateRange],
     queryFn: () => api.entries.list(params.id, dateRange)
   });
 
+  // Fetch 6-month summary for charts
+  const chartSummaryQuery = useQuery({
+    queryKey: ["chart-summary", params.id, last6Months],
+    queryFn: () => api.summary.monthly(params.id, last6Months)
+  });
+
   const budget = budgetQuery.data;
   const categories = categoriesQuery.data ?? [];
   const entries = entriesQuery.data ?? [];
+  const chartSummaryData = chartSummaryQuery.data ?? [];
   
   const budgetTypeInfo = budget ? getBudgetTypeInfo(budget.budget_type) : null;
   const TypeIcon = budgetTypeInfo?.icon;
@@ -86,6 +106,20 @@ export default function BudgetOverviewPage() {
       net: (income - expense) / 100
     };
   }, [entries]);
+
+  // Prepare category data for donut chart
+  const categoryChartData = useMemo(() => {
+    return categories
+      .map((cat) => {
+        const total = entries
+          .filter((e) => e.category_id === cat.id)
+          .reduce((sum, e) => sum + e.amount_minor, 0) / 100;
+        return { name: cat.name, value: Math.abs(total), kind: cat.kind };
+      })
+      .filter((cat) => cat.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [entries, categories]);
   
   const getPeriodLabel = () => {
     switch (period) {
@@ -236,6 +270,35 @@ export default function BudgetOverviewPage() {
           </Card>
         </div>
       </div>
+
+      {/* Charts Section */}
+      {(chartSummaryData.length > 0 || categoryChartData.length > 0) && (
+        <div className="space-y-6">
+          {/* Budget Income vs Expense Over Time - Full Width */}
+          {chartSummaryData.length > 0 && budget && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <BudgetIncomeExpenseChart 
+                data={chartSummaryData}
+                currencyCode={budget.currency_code}
+                title={t('overview.performanceOverTime')}
+                description={t('overview.last6Months')}
+              />
+            </div>
+          )}
+
+          {/* Category Breakdown for Selected Period */}
+          {categoryChartData.length > 0 && budget && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+              <CategorySpendingDonut 
+                data={categoryChartData}
+                currencyCode={budget.currency_code}
+                title={t('overview.categoryBreakdown')}
+                description={getPeriodLabel()}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {categories.length > 0 && (
         <Card>

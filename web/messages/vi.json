@@ -104,7 +104,8 @@
     "myBudgets": "Ngân sách của tôi",
     "createBudget": "Tạo ngân sách",
     "noBudgets": "Chưa có ngân sách",
-    "noBudgetsDescription": "Tạo ngân sách đầu tiên để bắt đầu theo dõi tài chính"
+    "noBudgetsDescription": "Tạo ngân sách đầu tiên để bắt đầu theo dõi tài chính",
+    "categorySpending": "Chi tiêu theo danh mục"
   },
   "budget": {
     "title": "Ngân sách",
@@ -205,8 +206,7 @@
     "counterparty": "Đối tác",
     "member": "Thành viên",
     "allMembers": "Tất cả thành viên",
-    "filterByMember": "Lọc theo thành viên",
-    "createdBy": "Tạo bởi"
+    "filterByMember": "Lọc theo thành viên"
   },
   "category": {
     "categories": "Danh mục",
@@ -264,7 +264,10 @@
     "basedOn": "Dựa trên",
     "entry": "giao dịch",
     "budgetNotFound": "Không tìm thấy ngân sách",
-    "couldntLoad": "Không thể tải ngân sách này. Vui lòng thử lại sau."
+    "couldntLoad": "Không thể tải ngân sách này. Vui lòng thử lại sau.",
+    "performanceOverTime": "Hiệu suất ngân sách theo thời gian",
+    "last6Months": "6 tháng gần đây",
+    "categoryBreakdown": "Phân tích theo danh mục"
   },
   "summary": {
     "title": "Tóm tắt",
@@ -293,7 +296,8 @@
     "highestNet": "Số dư ròng cao nhất",
     "lowestNet": "Số dư ròng thấp nhất",
     "noDataAvailable": "Không có dữ liệu cho khoảng thời gian đã chọn.",
-    "topCategories": "Danh mục hàng đầu"
+    "topCategories": "Danh mục hàng đầu",
+    "behaviorInsights": "Hành vi & Thông tin chi tiết"
   },
   "members": {
     "title": "Thành viên",
@@ -477,5 +481,48 @@
     "allCaughtUp": "Bạn đã xem hết!",
     "markAllRead": "Đánh dấu tất cả đã đọc",
     "markAsRead": "Đánh dấu đã đọc"
+  },
+  "charts": {
+    "monthlyCashflow": "Dòng tiền hàng tháng",
+    "cashflowDescription": "Theo dõi thu nhập, chi tiêu và số dư ròng theo thời gian",
+    "categorySpending": "Chi tiêu theo danh mục",
+    "categorySpendingDescription": "Xem tiền của bạn đi đâu trong tháng này",
+    "budgetTypeAllocation": "Phân bổ theo loại ngân sách",
+    "budgetTypeDescription": "Cách phân bổ tiền của bạn theo các loại ngân sách",
+    "budgetProgress": "Tiến độ ngân sách",
+    "budgetProgressDescription": "Theo dõi chi tiêu so với giới hạn ngân sách",
+    "incomeVsExpense": "Thu nhập vs Chi tiêu",
+    "incomeVsExpenseDescription": "So sánh thu nhập và chi tiêu theo thời gian",
+    "weekdaySpending": "Chi tiêu trung bình theo ngày trong tuần",
+    "weekdaySpendingDescription": "Chi tiêu trung bình mỗi ngày trong tuần",
+    "spendingHeatmap": "Lịch chi tiêu",
+    "spendingHeatmapDescription": "Bản đồ nhiệt chi tiêu hàng ngày",
+    "topExpenses": "Chi tiêu lớn nhất",
+    "topExpensesDescription": "Các khoản chi lớn nhất để xem xét và tối ưu",
+    "noDataAvailable": "Không có dữ liệu",
+    "noLimitsSet": "Chưa đặt giới hạn ngân sách",
+    "of": "của",
+    "total": "Tổng",
+    "net": "Ròng",
+    "weekdayAvg": "TB ngày thường",
+    "weekendAvg": "TB cuối tuần",
+    "highestDay": "Ngày cao nhất",
+    "avgDaily": "Trung bình ngày",
+    "less": "Ít",
+    "more": "Nhiều",
+    "weekday": "Ngày thường",
+    "weekend": "Cuối tuần",
+    "topTotal": "Tổng top",
+    "percentOfTotal": "% tổng",
+    "avgTopExpense": "TB top",
+    "topExpensesWarning": "Tập trung cao vào chi tiêu hàng đầu",
+    "topExpensesWarningDesc": "Top {percent}% chi tiêu của bạn chiếm hơn một nửa tổng chi. Hãy xem xét để tiết kiệm."
+  },
+  "budgetType": {
+    "standard": "Tiêu chuẩn",
+    "saving": "Tiết kiệm",
+    "debt": "Nợ",
+    "investment": "Đầu tư",
+    "sharing": "Chia sẻ"
   }
 }

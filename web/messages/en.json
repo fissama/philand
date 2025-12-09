@@ -104,7 +104,8 @@
     "myBudgets": "My Budgets",
     "createBudget": "Create Budget",
     "noBudgets": "No budgets yet",
-    "noBudgetsDescription": "Create your first budget to start tracking your finances"
+    "noBudgetsDescription": "Create your first budget to start tracking your finances",
+    "categorySpending": "Category Spending"
   },
   "budget": {
     "title": "Budget",
@@ -264,7 +265,10 @@
     "basedOn": "Based on",
     "entry": "entry",
     "budgetNotFound": "Budget not found",
-    "couldntLoad": "We couldn't load this budget. Try again later."
+    "couldntLoad": "We couldn't load this budget. Try again later.",
+    "performanceOverTime": "Budget Performance Over Time",
+    "last6Months": "Last 6 Months",
+    "categoryBreakdown": "Category Breakdown"
   },
   "summary": {
     "title": "Summary",
@@ -293,7 +297,8 @@
     "highestNet": "Highest net balance",
     "lowestNet": "Lowest net balance",
     "noDataAvailable": "No data available for the selected period.",
-    "topCategories": "Top Categories"
+    "topCategories": "Top Categories",
+    "behaviorInsights": "Behavior & Insights"
   },
   "members": {
     "title": "Members",
@@ -477,5 +482,48 @@
     "allCaughtUp": "You're all caught up!",
     "markAllRead": "Mark all read",
     "markAsRead": "Mark as read"
+  },
+  "charts": {
+    "monthlyCashflow": "Monthly Cashflow",
+    "cashflowDescription": "Track your income, expenses, and net balance over time",
+    "categorySpending": "Category Spending",
+    "categorySpendingDescription": "See where your money goes this month",
+    "budgetTypeAllocation": "Budget Type Allocation",
+    "budgetTypeDescription": "How your money is distributed across budget types",
+    "budgetProgress": "Budget Progress",
+    "budgetProgressDescription": "Track spending against your budget limits",
+    "incomeVsExpense": "Income vs Expense",
+    "incomeVsExpenseDescription": "Compare your income and expenses over time",
+    "weekdaySpending": "Average Spending by Weekday",
+    "weekdaySpendingDescription": "Average daily spending for each day of the week",
+    "spendingHeatmap": "Spending Calendar",
+    "spendingHeatmapDescription": "Daily spending intensity heatmap",
+    "topExpenses": "Top Expenses",
+    "topExpensesDescription": "Your biggest expenses to review and optimize",
+    "noDataAvailable": "No data available",
+    "noLimitsSet": "No budget limits set yet",
+    "of": "of",
+    "total": "Total",
+    "net": "Net",
+    "weekdayAvg": "Weekday Avg",
+    "weekendAvg": "Weekend Avg",
+    "highestDay": "Highest Day",
+    "avgDaily": "Daily Average",
+    "less": "Less",
+    "more": "More",
+    "weekday": "Weekday",
+    "weekend": "Weekend",
+    "topTotal": "Top Total",
+    "percentOfTotal": "% of Total",
+    "avgTopExpense": "Avg Top",
+    "topExpensesWarning": "High concentration in top expenses",
+    "topExpensesWarningDesc": "Your top {percent}% expenses represent over half of your spending. Consider reviewing these for potential savings."
+  },
+  "budgetType": {
+    "standard": "Standard",
+    "saving": "Saving",
+    "debt": "Debt",
+    "investment": "Investment",
+    "sharing": "Sharing"
   }
 }
