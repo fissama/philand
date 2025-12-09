@@ -18,8 +18,8 @@ pub struct RateLimiter {
     short_max: u32,
     long_window: Duration,
     long_max: u32,
-    fail_threshold: u32,
-    fail_lock_duration: Duration,
+    // fail_threshold: u32,
+    // fail_lock_duration: Duration,
 }
 
 impl RateLimiter {
@@ -28,8 +28,8 @@ impl RateLimiter {
         short_max: u32,
         long_window_sec: u64,
         long_max: u32,
-        fail_threshold: u32,
-        fail_lock_min: u64,
+        _fail_threshold: u32,
+        _fail_lock_min: u64,
     ) -> Self {
         Self {
             store: Arc::new(DashMap::new()),
@@ -37,8 +37,8 @@ impl RateLimiter {
             short_max,
             long_window: Duration::from_secs(long_window_sec),
             long_max,
-            fail_threshold,
-            fail_lock_duration: Duration::from_secs(fail_lock_min * 60),
+            // fail_threshold,
+            // fail_lock_duration: Duration::from_secs(fail_lock_min * 60),
         }
     }
 
@@ -93,42 +93,39 @@ impl RateLimiter {
         }
     }
 
-    pub fn record_failure(&self, ip: IpAddr) {
-        let now = Instant::now();
+    // pub fn record_failure(&self, ip: IpAddr) {
+    //     let now = Instant::now();
         
-        if let Some(mut entry) = self.store.get_mut(&ip) {
-            // Check if this is a new failure window
-            if now.duration_since(entry.window_start) > self.long_window {
-                entry.count = 1;
-                entry.window_start = now;
-            } else {
-                entry.count += 1;
-            }
+    //     if let Some(mut entry) = self.store.get_mut(&ip) {
+    //         if now.duration_since(entry.window_start) > self.long_window {
+    //             entry.count = 1;
+    //             entry.window_start = now;
+    //         } else {
+    //             entry.count += 1;
+    //         }
 
-            // Lock if threshold exceeded
-            if entry.count >= self.fail_threshold {
-                entry.locked_until = Some(now + self.fail_lock_duration);
-                tracing::warn!("IP {} locked due to {} failed attempts", ip, entry.count);
-            }
-        } else {
-            self.store.insert(ip, RateLimitEntry {
-                count: 1,
-                window_start: now,
-                locked_until: None,
-            });
-        }
-    }
+    //         if entry.count >= self.fail_threshold {
+    //             entry.locked_until = Some(now + self.fail_lock_duration);
+    //             tracing::warn!("IP {} locked due to {} failed attempts", ip, entry.count);
+    //         }
+    //     } else {
+    //         self.store.insert(ip, RateLimitEntry {
+    //             count: 1,
+    //             window_start: now,
+    //             locked_until: None,
+    //         });
+    //     }
+    // }
 
-    pub fn cleanup_expired(&self) {
-        let now = Instant::now();
-        self.store.retain(|_, entry| {
-            // Keep if locked or within window
-            if let Some(locked_until) = entry.locked_until {
-                if now < locked_until {
-                    return true;
-                }
-            }
-            now.duration_since(entry.window_start) < self.long_window
-        });
-    }
+    // pub fn cleanup_expired(&self) {
+    //     let now = Instant::now();
+    //     self.store.retain(|_, entry| {
+    //         if let Some(locked_until) = entry.locked_until {
+    //             if now < locked_until {
+    //                 return true;
+    //             }
+    //         }
+    //         now.duration_since(entry.window_start) < self.long_window
+    //     });
+    // }
 }

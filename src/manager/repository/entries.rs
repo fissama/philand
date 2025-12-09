@@ -21,7 +21,7 @@ impl EntryRepo {
         let mut q = String::from(
             "SELECT e.id, e.budget_id, e.category_id, e.kind, e.amount_minor, e.currency_code, \
              e.entry_date, e.description, e.counterparty, e.created_by, e.updated_by, \
-             e.created_at, e.updated_at, e.deleted_at, \
+             e.created_at, e.updated_at, e.deleted_at, e.comment_count, e.attachment_count, \
              u.name as member_name, u.email as member_email, u.avatar as member_avatar \
              FROM entries e \
              INNER JOIN users u ON e.created_by = u.id \
@@ -84,7 +84,10 @@ impl EntryRepo {
             .bind(&currency).bind(req.entry_date).bind(&req.description).bind(&req.counterparty).bind(&req.created_by)
             .execute(pool).await?;
         Ok(sqlx::query_as::<_, Entry>(
-            "SELECT e.*, u.name as member_name, u.email as member_email, u.avatar as member_avatar \
+            "SELECT e.id, e.budget_id, e.category_id, e.kind, e.amount_minor, e.currency_code, \
+             e.entry_date, e.description, e.counterparty, e.created_by, e.updated_by, \
+             e.created_at, e.updated_at, e.deleted_at, e.comment_count, e.attachment_count, \
+             u.name as member_name, u.email as member_email, u.avatar as member_avatar \
              FROM entries e \
              INNER JOIN users u ON e.created_by = u.id \
              WHERE e.id = ?"
@@ -94,7 +97,10 @@ impl EntryRepo {
     pub async fn update(pool: &DbPool, budget_id: &str, entry_id: &str, req: UpdateEntryReq, user_id: &str) -> Result<Entry, AppError> {
         // First check if entry exists and belongs to the budget
         let mut entry = sqlx::query_as::<_, Entry>(
-            "SELECT e.*, u.name as member_name, u.email as member_email, u.avatar as member_avatar \
+            "SELECT e.id, e.budget_id, e.category_id, e.kind, e.amount_minor, e.currency_code, \
+             e.entry_date, e.description, e.counterparty, e.created_by, e.updated_by, \
+             e.created_at, e.updated_at, e.deleted_at, e.comment_count, e.attachment_count, \
+             u.name as member_name, u.email as member_email, u.avatar as member_avatar \
              FROM entries e \
              INNER JOIN users u ON e.created_by = u.id \
              WHERE e.id = ? AND e.budget_id = ? AND e.deleted_at IS NULL"

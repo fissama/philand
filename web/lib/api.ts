@@ -19,6 +19,13 @@ interface ApiError extends Error {
   details?: unknown;
 }
 
+export async function apiRequest<TResponse, TBody = unknown>(
+  path: string,
+  options: RequestOptions<TBody> = {}
+): Promise<TResponse> {
+  return request(path, options);
+}
+
 async function request<TResponse, TBody = unknown>(
   path: string,
   options: RequestOptions<TBody> = {}
@@ -111,10 +118,10 @@ export const api = {
       const params = query ? `?query=${encodeURIComponent(query)}` : "";
       return request<BudgetSummary[]>(`/api/budgets${params}`);
     },
-    create: (input: { name: string; currency: string }) =>
+    create: (input: { name: string; currency: string; budget_type?: BudgetType }) =>
       request<BudgetSummary>("/api/budgets", { 
         method: "POST", 
-        body: { name: input.name, currency_code: input.currency } 
+        body: { name: input.name, currency_code: input.currency, budget_type: input.budget_type } 
       }),
     detail: (id: string) => request<BudgetDetail>(`/api/budgets/${id}`),
     balance: (id: string) => request<BudgetBalance>(`/api/budgets/${id}/balance`),
@@ -261,6 +268,41 @@ export const api = {
       request<Member>(`/api/budgets/${budgetId}/members/${memberId}`, { method: "PATCH", body: input }),
     remove: (budgetId: string, memberId: string) =>
       request<Response>(`/api/budgets/${budgetId}/members/${memberId}`, { method: "DELETE", raw: true })
+  },
+  transfers: {
+    create: (input: {
+      from_budget_id: string;
+      to_budget_id: string;
+      amount: number;
+      transfer_date: string;
+      currency_code: string;
+      note?: string;
+      from_category_id: string;
+      to_category_id: string;
+    }) =>
+      request<{
+        transfer: {
+          id: string;
+          from_budget_id: string;
+          to_budget_id: string;
+          amount_minor: number;
+          currency_code: string;
+          transfer_date: string;
+          note: string | null;
+          created_by: string;
+          created_at: string;
+        };
+        from_entry_id: string;
+        to_entry_id: string;
+        from_budget_name: string;
+        to_budget_name: string;
+      }>('/api/transfers', {
+        method: 'POST',
+        body: {
+          ...input,
+          amount_minor: Math.round(input.amount * 100)
+        }
+      })
   }
 };
 
@@ -295,10 +337,13 @@ export interface AvatarResponse {
 
 export type Role = "owner" | "manager" | "contributor" | "viewer";
 
+export type BudgetType = "standard" | "saving" | "debt" | "invest" | "sharing";
+
 export interface BudgetSummary {
   id: string;
   name: string;
   currency_code: string;
+  budget_type: BudgetType;
   owner_id: string;
   description?: string;
   archived: boolean;
@@ -324,6 +369,7 @@ export interface UpdateBudgetReq {
   name?: string;
   description?: string;
   currency_code?: string;
+  budget_type?: BudgetType;
   archived?: boolean;
 }
 
@@ -358,6 +404,10 @@ export interface Entry {
   member_name: string;
   member_email: string;
   member_avatar?: string;
+  // Comments and attachments
+  comment_count?: number;
+  attachment_count?: number;
+  category_name?: string;
 }
 
 export interface EntryListResponse {

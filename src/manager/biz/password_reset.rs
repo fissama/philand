@@ -203,14 +203,13 @@ impl PasswordResetService {
         Ok(())
     }
 
-    /// Clean up expired reset requests
-    pub async fn cleanup_expired(pool: &MySqlPool) -> Result<u64, AppError> {
-        let result = sqlx::query(
-            "DELETE FROM password_resets WHERE expires_at < NOW() OR used = TRUE"
-        )
-        .execute(pool)
-        .await?;
+    // pub async fn cleanup_expired(pool: &MySqlPool) -> Result<u64, AppError> {
+    //     let result = sqlx::query(
+    //         "DELETE FROM password_resets WHERE expires_at < NOW() OR used = TRUE"
+    //     )
+    //     .execute(pool)
+    //     .await?;
 
-        Ok(result.rows_affected())
-    }
+    //     Ok(result.rows_affected())
+    // }
 }

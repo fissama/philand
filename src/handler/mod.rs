@@ -13,10 +13,13 @@ pub mod members;
 pub mod profile;
 pub mod google_auth;
 pub mod cleanup;
+pub mod comments;
+pub mod notifications;
+pub mod transfers;
 
 #[derive(Clone)]
 pub struct AppState { 
     pub pool: DbPool,
     pub rate_limiter: Arc<RateLimiter>,
 }
-pub type AppCtx = Arc<AppState>;
+// pub type AppCtx = Arc<AppState>;

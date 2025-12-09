@@ -6,7 +6,8 @@ use crate::utils::error::error::AppError;
 use super::AppState;
 
 pub async fn list(State(state): State<Arc<AppState>>, Extension(claims): Extension<crate::handler::auth::Claims>, Path(budget_id): Path<String>) -> Result<Json<Vec<BudgetMemberWithUser>>, AppError> {
-    crate::manager::biz::authz::ensure_owner(&state.pool, &budget_id, &claims.sub).await?;
+    // Allow any member (viewer or above) to see the member list
+    crate::manager::biz::authz::ensure_role(&state.pool, &budget_id, &claims.sub, crate::manager::models::role::Role::Viewer).await?;
     Ok(Json(MemberService::list_with_users(&state.pool, &budget_id).await?))
 }
 

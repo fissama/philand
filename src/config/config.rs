@@ -49,14 +49,14 @@ impl Config {
 
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
-    host: String,
+    // host: String,
     port: String,
 }
 
 impl NetworkConfig {
-    pub fn get_host(&self) -> String {
-        self.host.clone()
-    }
+    // pub fn get_host(&self) -> String {
+    //     self.host.clone()
+    // }
 
     pub fn get_port(&self) -> String {
         self.port.clone()
@@ -175,7 +175,7 @@ pub fn init() {
         dotenv().ok();
         GLOBAL_CONFIG = Some(Config {
             network_cfg: NetworkConfig {
-                host: env::var("NET_HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
+                // host: env::var("NET_HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
                 port: env::var("NET_PORT").unwrap_or_else(|_| "3000".to_string()),
             },
             database_cfg: DatabaseConfig {

@@ -1,10 +1,9 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use axum::{
-    routing::{get, post, patch}, 
+    routing::{get, post, patch, delete}, 
     Router, 
-    http::Method, 
-    http::HeaderValue,
+    http::Method,
     body::Body,
     http::Request,
     middleware::Next,
@@ -120,9 +119,18 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/budgets/{id}/categories/{category_id}", get(handler::categories::get_by_id).patch(handler::categories::update).delete(handler::categories::delete))
         .route("/api/budgets/{id}/entries", get(handler::entries::list).post(handler::entries::create))
         .route("/api/budgets/{id}/entries/{entry_id}", patch(handler::entries::update).delete(handler::entries::delete))
+        .route("/api/budgets/{id}/entries/{entry_id}/comments", get(handler::comments::list_comments).post(handler::comments::create_comment))
+        .route("/api/budgets/{id}/entries/{entry_id}/comments/{comment_id}", patch(handler::comments::update_comment).delete(handler::comments::delete_comment))
+        .route("/api/budgets/{id}/entries/{entry_id}/attachments", post(handler::comments::upload_attachment))
+        .route("/api/budgets/{id}/entries/{entry_id}/attachments/{attachment_id}", delete(handler::comments::delete_attachment))
         .route("/api/budgets/{id}/summary/monthly", get(handler::summaries::monthly))
         .route("/api/budgets/{id}/members", get(handler::members::list).post(handler::members::upsert))
         .route("/api/budgets/{id}/members/{user_id}", patch(handler::members::update).delete(handler::members::delete))
+        .route("/api/notifications", get(handler::notifications::list_notifications))
+        .route("/api/notifications/unread-count", get(handler::notifications::get_unread_count))
+        .route("/api/notifications/mark-read", post(handler::notifications::mark_as_read))
+        .route("/api/notifications/mark-all-read", post(handler::notifications::mark_all_as_read))
+        .route("/api/transfers", post(handler::transfers::create_transfer))
         .route("/api/admin/cleanup", post(handler::cleanup::manual_cleanup))
         .route_layer(axum::middleware::from_fn(handler::auth::auth_middleware));
 

@@ -4,7 +4,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useToast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { authStore } from "@/lib/auth";
@@ -12,6 +12,8 @@ import { authStore } from "@/lib/auth";
 export function GoogleSignInButton() {
   const router = useRouter();
   const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const login = useGoogleLogin({
@@ -20,8 +22,8 @@ export function GoogleSignInButton() {
       try {
         const response = await api.googleAuth(codeResponse.code);
         authStore.getState().setAuth(response);
-        toast.success(t("dashboard.welcome"), {
-          description: `${t("googleSignInSuccess")} - ${response.user.email}`,
+        toast.success(t("googleSignInSuccess"), {
+          description: response.user.email,
           duration: 4000,
         });
         router.push("/");
@@ -60,7 +62,7 @@ export function GoogleSignInButton() {
           description,
           duration: 6000,
           action: {
-            label: t("common.retry"),
+            label: tCommon("retry"),
             onClick: () => login(),
           },
         });

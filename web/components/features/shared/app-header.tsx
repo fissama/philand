@@ -20,6 +20,7 @@ import {
 import { HealthBadge } from "@/components/features/shared/health-badge";
 import { ThemeSelector } from "@/components/features/shared/theme-selector";
 import { LanguageSwitcher } from "@/components/features/shared/language-switcher";
+import { NotificationBell } from "@/components/features/notifications/notification-bell";
 import { getAppVersion } from "@/lib/version";
 
 export function AppHeader() {
@@ -62,6 +63,9 @@ export function AppHeader() {
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
         <ThemeSelector />
+        <div className="hidden md:block">
+          <NotificationBell />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
