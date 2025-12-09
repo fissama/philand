@@ -5,9 +5,9 @@ use sqlx::Row;
 pub struct MemberRepo;
 
 impl MemberRepo {
-    pub async fn list(pool: &DbPool, budget_id: &str) -> Result<Vec<BudgetMember>, AppError> {
-        Ok(sqlx::query_as::<_, BudgetMember>("SELECT budget_id, user_id, role FROM budget_members WHERE budget_id = ? ORDER BY role").bind(budget_id).fetch_all(pool).await?)
-    }
+    // pub async fn list(pool: &DbPool, budget_id: &str) -> Result<Vec<BudgetMember>, AppError> {
+    //     Ok(sqlx::query_as::<_, BudgetMember>("SELECT budget_id, user_id, role FROM budget_members WHERE budget_id = ? ORDER BY role").bind(budget_id).fetch_all(pool).await?)
+    // }
     
     pub async fn list_with_users(pool: &DbPool, budget_id: &str) -> Result<Vec<BudgetMemberWithUser>, AppError> {
         let rows = sqlx::query(

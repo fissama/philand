@@ -13,14 +13,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { api, Budget, UpdateBudgetReq } from "@/lib/api";
+import { budgetTypes } from "@/lib/budget-types";
 import { toast } from "sonner";
 
 const updateSchema = z.object({
   name: z.string().min(1, "Budget name is required"),
   description: z.string().optional(),
   currency_code: z.string().min(3, "Currency code must be at least 3 characters"),
+  budget_type: z.enum(["standard", "saving", "debt", "invest", "sharing"]).optional(),
 });
 
 type UpdateFormValues = z.infer<typeof updateSchema>;
@@ -44,6 +47,7 @@ export function BudgetSettings({ budget, canEdit, canDelete }: BudgetSettingsPro
       name: budget.name,
       description: budget.description || "",
       currency_code: budget.currency_code,
+      budget_type: budget.budget_type,
     },
   });
 
@@ -145,6 +149,62 @@ export function BudgetSettings({ budget, canEdit, canDelete }: BudgetSettingsPro
                           <FormMessage />
                         </FormItem>
                       )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="budget_type"
+                      render={({ field }) => {
+                        const selectedType = budgetTypes.find(t => t.value === field.value);
+                        const SelectedIcon = selectedType?.icon;
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>{t('budget.type')}</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-auto">
+                                  <SelectValue>
+                                    {selectedType && (
+                                      <div className="flex items-center gap-3 py-1">
+                                        <div className={`rounded-lg p-2 ${selectedType.bgColor} ${selectedType.borderColor} border`}>
+                                          {SelectedIcon && <SelectedIcon className={`h-5 w-5 ${selectedType.color}`} />}
+                                        </div>
+                                        <div className="flex flex-col items-start">
+                                          <span className="font-semibold">{t(selectedType.labelKey as any)}</span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {t(selectedType.descriptionKey as any)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {budgetTypes.map((type) => {
+                                  const TypeIcon = type.icon;
+                                  return (
+                                    <SelectItem key={type.value} value={type.value} className="cursor-pointer">
+                                      <div className="flex items-center gap-3 py-2">
+                                        <div className={`rounded-lg p-2 ${type.bgColor} ${type.borderColor} border`}>
+                                          <TypeIcon className={`h-5 w-5 ${type.color}`} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <span className="font-semibold">{t(type.labelKey as any)}</span>
+                                          <span className="text-xs text-muted-foreground">
+                                            {t(type.descriptionKey as any)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                     <FormField
                       control={form.control}

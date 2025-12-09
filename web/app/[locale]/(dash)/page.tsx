@@ -8,6 +8,9 @@ import { useTranslations } from 'next-intl';
 
 import { BudgetCard } from "@/components/features/budgets/budget-card";
 import { GlobalQuickAddEntry } from "@/components/features/entries/global-quick-add-entry";
+import { MonthlyCashflowChart } from "@/components/features/dashboard/monthly-cashflow-chart";
+import { CategorySpendingDonut } from "@/components/features/dashboard/category-spending-donut";
+import { BudgetTypeAllocationChart } from "@/components/features/dashboard/budget-type-allocation-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +30,17 @@ export default function DashboardPage() {
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     return {
       from: firstDay.toISOString().split("T")[0],
+      to: now.toISOString().split("T")[0]
+    };
+  }, []);
+
+  // Get last 12 months date range for charts
+  const last12Months = useMemo(() => {
+    const now = new Date();
+    const twelveMonthsAgo = new Date(now);
+    twelveMonthsAgo.setMonth(now.getMonth() - 11);
+    return {
+      from: new Date(twelveMonthsAgo.getFullYear(), twelveMonthsAgo.getMonth(), 1).toISOString().split("T")[0],
       to: now.toISOString().split("T")[0]
     };
   }, []);
@@ -67,10 +81,24 @@ export default function DashboardPage() {
     enabled: Boolean(budgetId)
   });
 
+  // Fetch 12-month summary for charts
+  const yearSummaryQuery = useQuery({
+    queryKey: ["year-summary", budgetId, last12Months],
+    queryFn: () => {
+      if (!budgetId) return Promise.resolve([]);
+      return api.summary.monthly(budgetId, {
+        from: last12Months.from,
+        to: last12Months.to
+      });
+    },
+    enabled: Boolean(budgetId)
+  });
+
   const selectedBudgetData = budgetsQuery.data?.find((b) => b.id === budgetId);
   const entries = entriesQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
   const monthlySummaryData = monthlySummaryQuery.data?.[0]; // Get first (and only) month
+  const yearSummaryData = yearSummaryQuery.data ?? [];
 
   // Use monthly summary for accurate totals (not affected by pagination)
   const monthSummary = useMemo(() => {
@@ -110,6 +138,20 @@ export default function DashboardPage() {
       .filter((cat) => cat.total !== 0)
       .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
       .slice(0, 5);
+  }, [entries, categories]);
+
+  // Prepare category data for donut chart (expenses only for this month)
+  const categoryChartData = useMemo(() => {
+    return categories
+      .map((cat) => {
+        const total = entries
+          .filter((e) => e.category_id === cat.id && e.kind === 'expense')
+          .reduce((sum, e) => sum + e.amount_minor, 0) / 100;
+        return { name: cat.name, value: total, kind: cat.kind };
+      })
+      .filter((cat) => cat.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8); // Top 8 categories
   }, [entries, categories]);
 
   const formatAmount = (amount: number) =>
@@ -315,6 +357,44 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Charts Section */}
+          {(yearSummaryData.length > 0 || categoryChartData.length > 0 || (budgetsQuery.data && budgetsQuery.data.length > 1)) && (
+            <div className="space-y-6">
+              {/* Monthly Cashflow Chart - Full Width */}
+              {yearSummaryData.length > 0 && selectedBudgetData && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <MonthlyCashflowChart 
+                    data={yearSummaryData} 
+                    currencyCode={selectedBudgetData.currency_code}
+                  />
+                </div>
+              )}
+
+              {/* Category & Budget Type Charts - Side by Side */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                {categoryChartData.length > 0 && selectedBudgetData && (
+                  <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
+                    <CategorySpendingDonut 
+                      data={categoryChartData}
+                      currencyCode={selectedBudgetData.currency_code}
+                      title={t('dashboard.categorySpending')}
+                      description={t('dashboard.thisMonth')}
+                    />
+                  </div>
+                )}
+
+                {budgetsQuery.data && budgetsQuery.data.length > 1 && (
+                  <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-200">
+                    <BudgetTypeAllocationChart 
+                      budgets={budgetsQuery.data}
+                      currencyCode={selectedBudgetData?.currency_code || 'USD'}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* All Budgets Overview */}
           {budgetsQuery.data && budgetsQuery.data.length > 0 && (

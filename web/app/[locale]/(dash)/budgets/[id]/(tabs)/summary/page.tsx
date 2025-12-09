@@ -8,6 +8,9 @@ import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WeekdaySpendingChart } from "@/components/features/dashboard/weekday-spending-chart";
+import { SpendingHeatmapCalendar } from "@/components/features/dashboard/spending-heatmap-calendar";
+import { TopExpensesChart } from "@/components/features/dashboard/top-expenses-chart";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +113,73 @@ export default function BudgetSummaryPage() {
       monthCount: monthlyData.length
     };
   }, [monthlyData, entries, categories]);
+
+  // Prepare weekday data - Calculate AVERAGE per day occurrence
+  const weekdayData = useMemo(() => {
+    // First, group by actual date to count unique days
+    const datesByWeekday = new Map<number, Set<string>>();
+    const totalsByWeekday = new Map<number, { income: number; expense: number }>();
+    
+    entries.forEach((entry) => {
+      const date = new Date(entry.entry_date);
+      const weekday = date.getDay();
+      const dateStr = entry.entry_date;
+      
+      // Track unique dates for this weekday
+      if (!datesByWeekday.has(weekday)) {
+        datesByWeekday.set(weekday, new Set());
+      }
+      datesByWeekday.get(weekday)!.add(dateStr);
+      
+      // Sum totals
+      const current = totalsByWeekday.get(weekday) || { income: 0, expense: 0 };
+      if (entry.kind === "income") {
+        current.income += entry.amount_minor / 100;
+      } else {
+        current.expense += entry.amount_minor / 100;
+      }
+      totalsByWeekday.set(weekday, current);
+    });
+
+    // Calculate average per day occurrence
+    return Array.from(totalsByWeekday.entries()).map(([weekday, totals]) => {
+      const uniqueDays = datesByWeekday.get(weekday)?.size || 1;
+      return {
+        weekday,
+        income: totals.income / uniqueDays,
+        expense: totals.expense / uniqueDays,
+      };
+    });
+  }, [entries]);
+
+  // Prepare heatmap data (current month)
+  const heatmapData = useMemo(() => {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    
+    const dailyMap = new Map<string, number>();
+    entries.forEach((entry) => {
+      if (entry.kind === "expense" && entry.entry_date.startsWith(currentMonth)) {
+        const current = dailyMap.get(entry.entry_date) || 0;
+        dailyMap.set(entry.entry_date, current + entry.amount_minor / 100);
+      }
+    });
+
+    return Array.from(dailyMap.entries()).map(([date, amount]) => ({ date, amount }));
+  }, [entries]);
+
+  // Prepare top expenses
+  const topExpenses = useMemo(() => {
+    return entries
+      .filter((e) => e.kind === "expense")
+      .map((e) => ({
+        id: e.id,
+        description: e.description || e.counterparty || "No description",
+        amount: e.amount_minor / 100,
+        date: e.entry_date,
+        category: categories.find((c) => c.id === e.category_id)?.name,
+      }));
+  }, [entries, categories]);
 
   const formatAmount = (amount: number) =>
     amount % 1 === 0
@@ -312,6 +382,40 @@ export default function BudgetSummaryPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Behavior & Insight Charts */}
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">{t('summary.behaviorInsights')}</h3>
+        
+        {/* Weekday Spending */}
+        {weekdayData.length > 0 && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <WeekdaySpendingChart data={weekdayData} currencyCode={budget.currency_code} />
+          </div>
+        )}
+
+        {/* Spending Heatmap & Top Expenses */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {heatmapData.length > 0 && (
+            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
+              <SpendingHeatmapCalendar 
+                data={heatmapData} 
+                currencyCode={budget.currency_code}
+              />
+            </div>
+          )}
+
+          {topExpenses.length > 0 && (
+            <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-200">
+              <TopExpensesChart 
+                data={topExpenses} 
+                currencyCode={budget.currency_code}
+                topN={10}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

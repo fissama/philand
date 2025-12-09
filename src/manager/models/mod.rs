@@ -5,3 +5,6 @@ pub mod entry;
 pub mod role;
 pub mod member;
 pub mod google_auth;
+pub mod comment;
+pub mod notification;
+pub mod transfer;

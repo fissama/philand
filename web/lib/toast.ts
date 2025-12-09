@@ -23,11 +23,11 @@ const getToastStyles = (theme: string) => {
     case "colorful":
       return {
         ...baseStyles,
-        background: "linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%)",
+        background: "rgba(255, 255, 255, 0.98)",
         color: "hsl(220 9% 15%)",
-        border: "2px solid rgba(147, 197, 253, 0.3)",
-        boxShadow: "0 8px 32px rgba(59, 130, 246, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8)",
-        backdropFilter: "blur(12px)",
+        border: "2px solid rgba(147, 197, 253, 0.5)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 1)",
+        backdropFilter: "blur(16px)",
       };
     case "light":
     default:
@@ -62,9 +62,9 @@ const getErrorStyles = (theme: string) => {
         ...baseStyles,
         background: "linear-gradient(135deg, hsl(350 89% 60%) 0%, hsl(340 82% 52%) 100%)",
         color: "white",
-        border: "2px solid rgba(244, 63, 94, 0.4)",
-        boxShadow: "0 8px 32px rgba(244, 63, 94, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(12px)",
+        border: "2px solid rgba(255, 255, 255, 0.3)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(16px)",
       };
     case "light":
     default:
@@ -99,9 +99,9 @@ const getSuccessStyles = (theme: string) => {
         ...baseStyles,
         background: "linear-gradient(135deg, hsl(158 64% 52%) 0%, hsl(142 71% 45%) 100%)",
         color: "white",
-        border: "2px solid rgba(34, 197, 94, 0.4)",
-        boxShadow: "0 8px 32px rgba(34, 197, 94, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(12px)",
+        border: "2px solid rgba(255, 255, 255, 0.3)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(16px)",
       };
     case "light":
     default:
@@ -136,9 +136,9 @@ const getWarningStyles = (theme: string) => {
         ...baseStyles,
         background: "linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(38 92% 50%) 100%)",
         color: "white",
-        border: "2px solid rgba(245, 158, 11, 0.4)",
-        boxShadow: "0 8px 32px rgba(245, 158, 11, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(12px)",
+        border: "2px solid rgba(255, 255, 255, 0.3)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(16px)",
       };
     case "light":
     default:
@@ -173,9 +173,9 @@ const getInfoStyles = (theme: string) => {
         ...baseStyles,
         background: "linear-gradient(135deg, hsl(213 94% 68%) 0%, hsl(217 91% 60%) 100%)",
         color: "white",
-        border: "2px solid rgba(59, 130, 246, 0.4)",
-        boxShadow: "0 8px 32px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-        backdropFilter: "blur(12px)",
+        border: "2px solid rgba(255, 255, 255, 0.3)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+        backdropFilter: "blur(16px)",
       };
     case "light":
     default:
@@ -191,7 +191,7 @@ const getInfoStyles = (theme: string) => {
 
 // Create theme-aware toast functions
 export const createThemeToast = (theme: string) => ({
-  success: (message: string, options?: { description?: string }) => {
+  success: (message: string, options?: any) => {
     return sonnerToast.success(message, {
       ...options,
       style: getSuccessStyles(theme),
@@ -199,7 +199,7 @@ export const createThemeToast = (theme: string) => ({
     });
   },
   
-  error: (message: string, options?: { description?: string }) => {
+  error: (message: string, options?: any) => {
     return sonnerToast.error(message, {
       ...options,
       style: getErrorStyles(theme),
@@ -207,7 +207,7 @@ export const createThemeToast = (theme: string) => ({
     });
   },
   
-  info: (message: string, options?: { description?: string }) => {
+  info: (message: string, options?: any) => {
     return sonnerToast.info(message, {
       ...options,
       style: getInfoStyles(theme),
@@ -215,7 +215,7 @@ export const createThemeToast = (theme: string) => ({
     });
   },
   
-  warning: (message: string, options?: { description?: string }) => {
+  warning: (message: string, options?: any) => {
     return sonnerToast.warning(message, {
       ...options,
       style: getWarningStyles(theme),

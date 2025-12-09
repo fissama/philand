@@ -31,6 +31,31 @@
     "settings": "Settings",
     "logout": "Logout"
   },
+  "comments": {
+    "title": "Comments",
+    "noComments": "No comments yet. Be the first to comment!",
+    "placeholder": "Write a comment... Use @ to mention members",
+    "post": "Post Comment",
+    "posting": "Posting...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "mention": "Mention",
+    "attachImage": "Attach Image",
+    "confirmDelete": "Are you sure you want to delete this comment?",
+    "emptyComment": "Comment cannot be empty",
+    "loadError": "Failed to load comments",
+    "createSuccess": "Comment posted successfully",
+    "createError": "Failed to post comment",
+    "updateSuccess": "Comment updated successfully",
+    "updateError": "Failed to update comment",
+    "deleteSuccess": "Comment deleted successfully",
+    "deleteError": "Failed to delete comment",
+    "uploadSuccess": "Image uploaded successfully",
+    "uploadError": "Failed to upload image"
+  },
   "auth": {
     "login": "Login",
     "signup": "Sign Up",
@@ -79,7 +104,8 @@
     "myBudgets": "My Budgets",
     "createBudget": "Create Budget",
     "noBudgets": "No budgets yet",
-    "noBudgetsDescription": "Create your first budget to start tracking your finances"
+    "noBudgetsDescription": "Create your first budget to start tracking your finances",
+    "categorySpending": "Category Spending"
   },
   "budget": {
     "title": "Budget",
@@ -89,6 +115,18 @@
     "name": "Budget Name",
     "description": "Description",
     "currency": "Currency",
+    "type": "Budget Type",
+    "selectType": "Select budget type",
+    "typeStandard": "Standard",
+    "typeSaving": "Saving",
+    "typeDebt": "Debt",
+    "typeInvest": "Investment",
+    "typeSharing": "Sharing",
+    "typeStandardDesc": "General income and expense tracking",
+    "typeSavingDesc": "Track savings goals and progress",
+    "typeDebtDesc": "Manage debt payments and payoff",
+    "typeInvestDesc": "Monitor investments and returns",
+    "typeSharingDesc": "Shared budget with family or friends",
     "createBudget": "Create Budget",
     "editBudget": "Edit Budget",
     "deleteBudget": "Delete Budget",
@@ -112,7 +150,16 @@
     "searchBudgets": "Search budgets by name or description...",
     "budgetsFound": "budgets found",
     "noBudgetsFound": "No budgets found",
-    "noResultsFor": "No results for"
+    "noResultsFor": "No results for",
+    "budgetRestored": "Budget Restored",
+    "restoredSuccess": "has been restored successfully",
+    "restoreFailed": "Failed to restore budget",
+    "restore": "Restore",
+    "archivedBudgetsInfo": "Archived Budgets",
+    "archivedBudgetsDescription": "These budgets are archived and won't appear in your active list. You can restore them anytime if needed.",
+    "noArchivedBudgets": "No Archived Budgets",
+    "noArchivedBudgetsDescription": "You haven't archived any budgets yet. Archived budgets will appear here.",
+    "noArchivedBudgetsFound": "No archived budgets found"
   },
   "entry": {
     "entries": "Entries",
@@ -161,10 +208,20 @@
     "quickAddDescription": "Quickly add a new transaction to any budget",
     "selectBudgetFirst": "Select a budget first",
     "noCategoriesForBudget": "No categories available for this budget",
+    "details": "Details",
+    "comments": "Comments",
+    "noDescription": "No description",
+    "createdBy": "Created by",
+    "counterparty": "Counterparty",
     "member": "Member",
-    "filterByMember": "Filter by Member",
     "allMembers": "All Members",
-    "createdBy": "Created by"
+    "filterByMember": "Filter by Member",
+    "createdBy": "Created by",
+    "exportAsImage": "Export as Image",
+    "exporting": "Exporting...",
+    "exportSuccess": "Exported successfully",
+    "exportSuccessDesc": "Table has been saved as an image",
+    "exportFailed": "Failed to export table"
   },
   "category": {
     "categories": "Categories",
@@ -222,7 +279,10 @@
     "basedOn": "Based on",
     "entry": "entry",
     "budgetNotFound": "Budget not found",
-    "couldntLoad": "We couldn't load this budget. Try again later."
+    "couldntLoad": "We couldn't load this budget. Try again later.",
+    "performanceOverTime": "Budget Performance Over Time",
+    "last6Months": "Last 6 Months",
+    "categoryBreakdown": "Category Breakdown"
   },
   "summary": {
     "title": "Summary",
@@ -251,7 +311,8 @@
     "highestNet": "Highest net balance",
     "lowestNet": "Lowest net balance",
     "noDataAvailable": "No data available for the selected period.",
-    "topCategories": "Top Categories"
+    "topCategories": "Top Categories",
+    "behaviorInsights": "Behavior & Insights"
   },
   "members": {
     "title": "Members",
@@ -428,5 +489,55 @@
     "documentation": "Documentation",
     "support": "Support",
     "community": "Community"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "allCaughtUp": "You're all caught up!",
+    "markAllRead": "Mark all read",
+    "markAsRead": "Mark as read"
+  },
+  "charts": {
+    "monthlyCashflow": "Monthly Cashflow",
+    "cashflowDescription": "Track your income, expenses, and net balance over time",
+    "categorySpending": "Category Spending",
+    "categorySpendingDescription": "See where your money goes this month",
+    "budgetTypeAllocation": "Budget Type Allocation",
+    "budgetTypeDescription": "How your money is distributed across budget types",
+    "budgetProgress": "Budget Progress",
+    "budgetProgressDescription": "Track spending against your budget limits",
+    "incomeVsExpense": "Income vs Expense",
+    "incomeVsExpenseDescription": "Compare your income and expenses over time",
+    "weekdaySpending": "Average Spending by Weekday",
+    "weekdaySpendingDescription": "Average daily spending for each day of the week",
+    "spendingHeatmap": "Spending Calendar",
+    "spendingHeatmapDescription": "Daily spending intensity heatmap",
+    "topExpenses": "Top Expenses",
+    "topExpensesDescription": "Your biggest expenses to review and optimize",
+    "noDataAvailable": "No data available",
+    "noLimitsSet": "No budget limits set yet",
+    "of": "of",
+    "total": "Total",
+    "net": "Net",
+    "weekdayAvg": "Weekday Avg",
+    "weekendAvg": "Weekend Avg",
+    "highestDay": "Highest Day",
+    "avgDaily": "Daily Average",
+    "less": "Less",
+    "more": "More",
+    "weekday": "Weekday",
+    "weekend": "Weekend",
+    "topTotal": "Top Total",
+    "percentOfTotal": "% of Total",
+    "avgTopExpense": "Avg Top",
+    "topExpensesWarning": "High concentration in top expenses",
+    "topExpensesWarningDesc": "Your top {percent}% expenses represent over half of your spending. Consider reviewing these for potential savings."
+  },
+  "budgetType": {
+    "standard": "Standard",
+    "saving": "Saving",
+    "debt": "Debt",
+    "investment": "Investment",
+    "sharing": "Sharing"
   }
 }

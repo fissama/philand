@@ -1,14 +1,14 @@
 use std::sync::Arc;
 use axum::{extract::{Query, Path, State}, Json, Extension};
 use serde::{Deserialize, Serialize};
-use crate::manager::models::{budget::{Budget, BudgetWithRole, CreateBudgetReq}};
+use crate::manager::models::{budget::{Budget, BudgetWithRole, CreateBudgetReq, BudgetType}};
 use crate::manager::biz::budgets::BudgetService;
 use crate::utils::error::error::AppError;
 use super::{AppState};
 
 #[derive(Deserialize)]
 pub struct BudgetFilter { 
-    owner_id: Option<String>,
+    // owner_id: Option<String>,
     query: Option<String>,
 }
 
@@ -17,6 +17,7 @@ pub struct UpdateBudgetReq {
     pub name: Option<String>,
     pub description: Option<String>,
     pub currency_code: Option<String>,
+    pub budget_type: Option<BudgetType>,
     pub archived: Option<bool>,
 }
 

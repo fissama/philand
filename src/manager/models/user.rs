@@ -48,8 +48,8 @@ pub struct UpdateProfileReq {
     pub locale: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct UploadAvatarReq {
-    pub avatar: String, // base64 encoded image
-}
+// #[derive(Debug, Deserialize)]
+// pub struct UploadAvatarReq {
+//     pub avatar: String,
+// }
 

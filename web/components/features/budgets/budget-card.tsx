@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import type { BudgetSummary } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getBudgetTypeInfo } from "@/lib/budget-types";
 
 interface BudgetCardProps {
   budget: BudgetSummary;
@@ -14,6 +15,8 @@ interface BudgetCardProps {
 export function BudgetCard({ budget }: BudgetCardProps) {
   const t = useTranslations();
   const currency = budget.currency_code || "USD";
+  const typeInfo = getBudgetTypeInfo(budget.budget_type);
+  const TypeIcon = typeInfo.icon;
 
   return (
     <Link href={`/budgets/${budget.id}`} className="block group">
@@ -21,6 +24,14 @@ export function BudgetCard({ budget }: BudgetCardProps) {
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`rounded-lg p-1.5 ${typeInfo.bgColor} ${typeInfo.borderColor} border`}>
+                  <TypeIcon className={`h-4 w-4 ${typeInfo.color}`} />
+                </div>
+                <span className={`text-xs font-medium ${typeInfo.color}`}>
+                  {t(typeInfo.labelKey as any)}
+                </span>
+              </div>
               <CardTitle className="text-xl group-hover:text-primary transition-colors">
                 {budget.name}
               </CardTitle>
