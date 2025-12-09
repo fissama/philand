@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { api, type BudgetSummary, type Category } from '@/lib/api';
+import { api, type BudgetSummary, type CategorySummary } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -64,8 +64,8 @@ export function TransferDialog({ currentBudgetId, trigger }: TransferDialogProps
     enabled: !!toBudgetId,
   });
 
-  const expenseCategories = fromCategories.filter((c: Category) => c.kind === 'expense');
-  const incomeCategories = toCategories.filter((c: Category) => c.kind === 'income');
+  const expenseCategories = fromCategories.filter((c: CategorySummary) => c.kind === 'expense');
+  const incomeCategories = toCategories.filter((c: CategorySummary) => c.kind === 'income');
 
   const fromBudget = contributorBudgets.find((b: BudgetSummary) => b.id === fromBudgetId);
   const toBudget = contributorBudgets.find((b: BudgetSummary) => b.id === toBudgetId);
@@ -214,7 +214,7 @@ export function TransferDialog({ currentBudgetId, trigger }: TransferDialogProps
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {expenseCategories.map((category: Category) => (
+                  {expenseCategories.map((category: CategorySummary) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -230,7 +230,7 @@ export function TransferDialog({ currentBudgetId, trigger }: TransferDialogProps
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {incomeCategories.map((category: Category) => (
+                  {incomeCategories.map((category: CategorySummary) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
