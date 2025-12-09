@@ -5,7 +5,7 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from "@/lib/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -21,6 +21,7 @@ import { EntryForm } from "@/components/features/entries/entry-form";
 import { DateRangePicker } from "@/components/features/forms/date-range-picker";
 import { EntryDetailsDialog } from "@/components/features/entries/entry-details-dialog";
 import { TransferDialog } from "@/components/features/transfers/transfer-dialog";
+import { ExportTableButton } from "@/components/features/entries/export-table-button";
 import type { Entry } from "@/lib/api";
 import type { BudgetMember } from "@/lib/comment-types";
 import { MoneyInput } from "@/components/features/forms/money-input";
@@ -90,6 +91,7 @@ export default function BudgetEntriesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [showEntryDetails, setShowEntryDetails] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const budgetQuery = useQuery({
     queryKey: ["budget", params.id],
@@ -309,6 +311,12 @@ export default function BudgetEntriesPage() {
               </Button>
             }
           />
+          <ExportTableButton 
+            tableRef={tableRef}
+            filename={`${budgetQuery.data?.name || 'budget'}-entries`}
+            budgetName={budgetQuery.data?.name || 'Budget'}
+            dateRange={filters.from && filters.to ? `${new Date(filters.from).toLocaleDateString()} - ${new Date(filters.to).toLocaleDateString()}` : undefined}
+          />
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 h-12 sm:h-10 text-base sm:text-sm font-medium w-full sm:w-auto">
@@ -460,7 +468,7 @@ export default function BudgetEntriesPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card ref={tableRef}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{t('entry.transactions')}</CardTitle>

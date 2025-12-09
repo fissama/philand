@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { PlusCircle, Search, X, Plus } from "lucide-react";
+import { PlusCircle, Search, X, Plus, Archive, ArchiveRestore } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDebounce } from "@/hooks/use-debounce";
 
@@ -19,6 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import { budgetTypes } from "@/lib/budget-types";
 import { toast } from "sonner";
@@ -36,11 +37,23 @@ export default function BudgetsPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const budgetsQuery = useQuery({ 
     queryKey: ["budgets", debouncedSearchTerm], 
     queryFn: () => api.budgets.list(debouncedSearchTerm || undefined)
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: (budgetId: string) => api.budgets.update(budgetId, { archived: false }),
+    onSuccess: (data) => {
+      toast.success(t('budget.budgetRestored'), { description: `${data.name} ${t('budget.restoredSuccess')}` });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+    },
+    onError: (error: unknown) => {
+      toast.error(t('budget.restoreFailed'), { description: error instanceof Error ? error.message : t('common.error') });
+    }
   });
 
   const form = useForm<BudgetFormValues>({
@@ -65,10 +78,15 @@ export default function BudgetsPage() {
     mutation.mutate(values);
   };
 
-  const filteredBudgets = useMemo(() => {
-    if (!budgetsQuery.data) return [];
-    return budgetsQuery.data;
-  }, [budgetsQuery.data]);
+  const { activeBudgets, archivedBudgets, currentBudgets } = useMemo(() => {
+    if (!budgetsQuery.data) return { activeBudgets: [], archivedBudgets: [], currentBudgets: [] };
+    
+    const active = budgetsQuery.data.filter(b => !b.archived);
+    const archived = budgetsQuery.data.filter(b => b.archived);
+    const current = activeTab === "active" ? active : archived;
+    
+    return { activeBudgets: active, archivedBudgets: archived, currentBudgets: current };
+  }, [budgetsQuery.data, activeTab]);
 
   return (
     <div className="space-y-4 md:space-y-6 pb-20 md:pb-6">
@@ -130,35 +148,67 @@ export default function BudgetsPage() {
         </div>
       </header>
 
-      {/* Search Bar - Simplified for mobile */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
-        <Input
-          placeholder={t('budget.searchBudgets')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-10 h-11 md:h-10"
-        />
+      {/* Tabs for Active/Archived with improved styling */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "archived")} className="w-full">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <TabsList className="grid grid-cols-2 h-11 md:h-10 flex-1 max-w-md">
+            <TabsTrigger value="active" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <span>{t('budget.active')}</span>
+              {activeBudgets.length > 0 && (
+                <span className="ml-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold">
+                  {activeBudgets.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Archive className="h-4 w-4" />
+              <span>{t('budget.archived')}</span>
+              {archivedBudgets.length > 0 && (
+                <span className="ml-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs font-semibold">
+                  {archivedBudgets.length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* Results count */}
+          {!budgetsQuery.isLoading && (
+            <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="font-medium">{currentBudgets.length}</span>
+              <span>{activeTab === "active" ? t('budget.active') : t('budget.archived')}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Search Bar - Simplified for mobile */}
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+          <Input
+            placeholder={t('budget.searchBudgets')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-10 h-11 md:h-10"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchTerm("")}
+              className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        
         {searchTerm && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearchTerm("")}
-            className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <p className="text-sm text-muted-foreground px-1 mt-2">
+            {budgetsQuery.isLoading 
+              ? t('common.loading')
+              : `${currentBudgets.length} ${t('budget.budgetsFound')}`
+            }
+          </p>
         )}
-      </div>
-      
-      {searchTerm && (
-        <p className="text-sm text-muted-foreground px-1">
-          {budgetsQuery.isLoading 
-            ? t('common.loading')
-            : `${filteredBudgets.length} ${t('budget.budgetsFound')}`
-          }
-        </p>
-      )}
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
@@ -285,53 +335,170 @@ export default function BudgetsPage() {
         </DialogContent>
       </Dialog>
 
-      {budgetsQuery.isLoading ? (
-        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} className="h-40 md:h-48 rounded-xl md:rounded-2xl" />
-          ))}
-        </div>
-      ) : filteredBudgets.length ? (
-        <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {filteredBudgets.map((budget) => (
-            <BudgetCard key={budget.id} budget={budget} />
-          ))}
-        </div>
-      ) : searchTerm ? (
-        <Card className="border-dashed">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{t('budget.noBudgetsFound')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t('budget.noResultsFor')} "{searchTerm}"
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setSearchTerm("")}
-              className="w-full md:w-auto"
-            >
-              {t('common.clearSearch')}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-dashed">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">{t('dashboard.noBudgets')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t('dashboard.noBudgetsDescription')}</p>
-            <Button
-              onClick={() => setShowForm(true)}
-              className="w-full md:w-auto mt-4 gap-2"
-            >
-              <PlusCircle className="h-4 w-4" />
-              {t('budget.createBudget')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+        <TabsContent value="active" className="mt-0 space-y-4">
+          {budgetsQuery.isLoading ? (
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={`skeleton-${index}`} className="h-40 md:h-48 rounded-xl md:rounded-2xl" />
+              ))}
+            </div>
+          ) : currentBudgets.length > 0 ? (
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {currentBudgets.map((budget, index) => (
+                <div 
+                  key={budget.id}
+                  className="animate-in fade-in slide-in-from-bottom-4 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <BudgetCard budget={budget} />
+                </div>
+              ))}
+            </div>
+          ) : searchTerm ? (
+            <Card className="border-dashed border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Search className="h-5 w-5 text-muted-foreground" />
+                  {t('budget.noBudgetsFound')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {t('budget.noResultsFor')} <span className="font-medium">"{searchTerm}"</span>
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setSearchTerm("")}
+                  className="w-full md:w-auto gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  {t('common.clearSearch')}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-dashed border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <PlusCircle className="h-5 w-5 text-muted-foreground" />
+                  {t('dashboard.noBudgets')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">{t('dashboard.noBudgetsDescription')}</p>
+                <Button
+                  onClick={() => setShowForm(true)}
+                  className="w-full md:w-auto gap-2"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  {t('budget.createBudget')}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="archived" className="mt-0 space-y-4">
+          {budgetsQuery.isLoading ? (
+            <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={`skeleton-${index}`} className="h-40 md:h-48 rounded-xl md:rounded-2xl" />
+              ))}
+            </div>
+          ) : currentBudgets.length > 0 ? (
+            <div className="space-y-4">
+              {/* Info banner with improved design */}
+              <div className="rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-4 md:p-5 border border-muted/50 backdrop-blur-sm">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="rounded-lg bg-background/80 p-2 md:p-2.5 shadow-sm">
+                    <Archive className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <h3 className="font-semibold text-sm md:text-base">{t('budget.archivedBudgetsInfo')}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                      {t('budget.archivedBudgetsDescription')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Archived budgets grid with improved cards */}
+              <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                {currentBudgets.map((budget, index) => (
+                  <div 
+                    key={budget.id} 
+                    className="relative group animate-in fade-in slide-in-from-bottom-4 duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <Card className="relative overflow-hidden border-muted/50 bg-muted/20 transition-all hover:border-muted hover:shadow-md">
+                      {/* Archived badge */}
+                      <div className="absolute top-3 left-3 z-10">
+                        <div className="flex items-center gap-1.5 rounded-full bg-muted/80 backdrop-blur-sm px-2.5 py-1 text-xs font-medium text-muted-foreground border border-muted">
+                          <Archive className="h-3 w-3" />
+                          <span>{t('budget.archived')}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Restore button with improved styling */}
+                      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => restoreMutation.mutate(budget.id)}
+                          disabled={restoreMutation.isPending}
+                          className="gap-2 h-8 shadow-lg hover:shadow-xl transition-all"
+                        >
+                          <ArchiveRestore className="h-3.5 w-3.5" />
+                          <span className="text-xs font-medium">{t('budget.restore')}</span>
+                        </Button>
+                      </div>
+                      
+                      {/* Budget card with reduced opacity */}
+                      <div className="opacity-70 group-hover:opacity-80 transition-opacity pointer-events-none">
+                        <BudgetCard budget={budget} />
+                      </div>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : searchTerm ? (
+            <Card className="border-dashed border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Search className="h-5 w-5 text-muted-foreground" />
+                  {t('budget.noArchivedBudgetsFound')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {t('budget.noResultsFor')} <span className="font-medium">"{searchTerm}"</span>
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setSearchTerm("")}
+                  className="w-full md:w-auto gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  {t('common.clearSearch')}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-dashed border-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Archive className="h-5 w-5 text-muted-foreground" />
+                  {t('budget.noArchivedBudgets')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{t('budget.noArchivedBudgetsDescription')}</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

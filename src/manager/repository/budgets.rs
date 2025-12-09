@@ -61,7 +61,7 @@ impl BudgetRepo {
                     b.created_at, b.updated_at, bm.role as user_role
              FROM budgets b 
              INNER JOIN budget_members bm ON b.id = bm.budget_id 
-             WHERE bm.user_id = ? AND b.archived = 0"
+             WHERE bm.user_id = ?"
         );
         let mut bindings = vec![user_id.to_string()];
         

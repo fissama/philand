@@ -150,7 +150,16 @@
     "noBudgetsFound": "Không tìm thấy ngân sách",
     "noResultsFor": "Không có kết quả cho",
     "budget": "Ngân sách",
-    "selectBudget": "Chọn ngân sách"
+    "selectBudget": "Chọn ngân sách",
+    "budgetRestored": "Đã khôi phục ngân sách",
+    "restoredSuccess": "đã được khôi phục thành công",
+    "restoreFailed": "Không thể khôi phục ngân sách",
+    "restore": "Khôi phục",
+    "archivedBudgetsInfo": "Ngân sách đã lưu trữ",
+    "archivedBudgetsDescription": "Các ngân sách này đã được lưu trữ và sẽ không xuất hiện trong danh sách hoạt động. Bạn có thể khôi phục chúng bất cứ lúc nào nếu cần.",
+    "noArchivedBudgets": "Không có ngân sách đã lưu trữ",
+    "noArchivedBudgetsDescription": "Bạn chưa lưu trữ ngân sách nào. Các ngân sách đã lưu trữ sẽ xuất hiện ở đây.",
+    "noArchivedBudgetsFound": "Không tìm thấy ngân sách đã lưu trữ"
   },
   "entry": {
     "entries": "Giao dịch",
@@ -206,7 +215,12 @@
     "counterparty": "Đối tác",
     "member": "Thành viên",
     "allMembers": "Tất cả thành viên",
-    "filterByMember": "Lọc theo thành viên"
+    "filterByMember": "Lọc theo thành viên",
+    "exportAsImage": "Xuất thành ảnh",
+    "exporting": "Đang xuất...",
+    "exportSuccess": "Xuất thành công",
+    "exportSuccessDesc": "Bảng đã được lưu dưới dạng ảnh",
+    "exportFailed": "Không thể xuất bảng"
   },
   "category": {
     "categories": "Danh mục",

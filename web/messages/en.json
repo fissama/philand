@@ -150,7 +150,16 @@
     "searchBudgets": "Search budgets by name or description...",
     "budgetsFound": "budgets found",
     "noBudgetsFound": "No budgets found",
-    "noResultsFor": "No results for"
+    "noResultsFor": "No results for",
+    "budgetRestored": "Budget Restored",
+    "restoredSuccess": "has been restored successfully",
+    "restoreFailed": "Failed to restore budget",
+    "restore": "Restore",
+    "archivedBudgetsInfo": "Archived Budgets",
+    "archivedBudgetsDescription": "These budgets are archived and won't appear in your active list. You can restore them anytime if needed.",
+    "noArchivedBudgets": "No Archived Budgets",
+    "noArchivedBudgetsDescription": "You haven't archived any budgets yet. Archived budgets will appear here.",
+    "noArchivedBudgetsFound": "No archived budgets found"
   },
   "entry": {
     "entries": "Entries",
@@ -207,7 +216,12 @@
     "member": "Member",
     "allMembers": "All Members",
     "filterByMember": "Filter by Member",
-    "createdBy": "Created by"
+    "createdBy": "Created by",
+    "exportAsImage": "Export as Image",
+    "exporting": "Exporting...",
+    "exportSuccess": "Exported successfully",
+    "exportSuccessDesc": "Table has been saved as an image",
+    "exportFailed": "Failed to export table"
   },
   "category": {
     "categories": "Categories",
